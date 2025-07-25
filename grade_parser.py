@@ -45,6 +45,35 @@
 import re
 
 class GradeParser:
+    SUBJECT_SYNONYMS: {} # Dictionary of synonyms for all subjects
+
+    GRADE_PATTERN = r'\bA\*|A|B|C|D|E|U\b' # Finds grades like A*, B, U, etc
+
+    def clean_input(self, input): # Turns input to lowercase, replaces symbols, etc
+        input = input.replace("and", ",").lower().strip()
+        input = input.split(",")
+        return input
+    #enddef
+
+    def find_dropped_subjects(self, input): # Returns list of dropped subjects to not include in search process
+        pass
+    #enddef
+
+    def find_grade_subject_pairs(self, input): # Returns dictionary: {subject:grade}
+        pass
+    #enddef
+
+    def find_multi_grades(self, input): # Looks for AAA/AAB and assigns to subjects listed after
+        pass
+    #enddef
+
+    def normalize_subject(self, subject): # Turns synonyms into the main subject name
+        pass
+    #enddef
+
+    def find_course_interest(self, input): # Looks for course of interest
+        pass
+    #enddef
 
     def parse(self, input):
         pass
