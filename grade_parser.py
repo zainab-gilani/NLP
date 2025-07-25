@@ -51,7 +51,18 @@ class GradeParser:
 
     def clean_input(self, input): # Turns input to lowercase, replaces symbols, etc
         input = input.replace("and", ",").lower().strip()
-        input = input.split(",")
+        parts = input.split(",")
+
+        clean_parts = []
+
+        for p in parts:
+            if p.strip():
+                clean_parts.append(p.strip())
+            #endif
+        #endfor
+
+        input = ", ".join(clean_parts)
+
         return input
     #enddef
 
