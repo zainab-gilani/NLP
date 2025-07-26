@@ -45,8 +45,9 @@
 import re
 
 class GradeParser:
-    SUBJECT_SYNONYMS: {} # Dictionary of synonyms for all subjects
-
+    SYNONYMS = {
+        "dropped": ['dropped', 'quit', 'left', 'failed', "didn't take", "didn't do", 'retook', 'gave up'],
+    } # Dictionary of synonyms for all subjects
     GRADE_PATTERN = r'\bA\*|A|B|C|D|E|U\b' # Finds grades like A*, B, U, etc
 
     def clean_input(self, input): # Turns input to lowercase, replaces symbols, etc
