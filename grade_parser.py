@@ -68,7 +68,16 @@ class GradeParser:
     #enddef
 
     def find_dropped_subjects(self, input): # Returns list of dropped subjects to not include in search process
-        pass
+        cleaned = self.clean_input(input)
+        dropped = []
+        # dropped_keywords = "|".join(map(re.escape, self.SYNONYMS["dropped"]))
+
+        for word in self.SYNONYMS["dropped"]:
+            pattern = rf"{word}\s+((?:[a-zA-Z]+(?:\s[a-zA-Z]+)?(?:,| and | |$))+)"
+            matches = re.findall(pattern, cleaned)
+            dropped += matches
+        #endfor
+        return dropped
     #enddef
 
     def find_grade_subject_pairs(self, input): # Returns dictionary: {subject:grade}
