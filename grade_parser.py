@@ -76,29 +76,44 @@ class GradeParser:
         dropped = []
         # dropped_keywords = "|".join(map(re.escape, self.SYNONYMS["dropped"]))
 
-        for word in self.SYNONYMS["dropped"]:
-            pattern = rf"{word}\s+([a-zA-Z\s]+?)(?=,|$)"
-            matches = re.findall(pattern, cleaned)
-            for match in matches:
-                for subject in re.split(r'and', match):
-                    subject = subject.strip()
-                    if subject:
-                        dropped.append(subject)
-                    #endif
-                #endfor
-            #endfor
+        cleaned = cleaned.split(",")
+
+        parts = []
+        for x in cleaned:
+            parts.append(x.strip())
         #endfor
-        dropped_clean = []
-        for subject in dropped:
+
+        previous_was_dropped = False
+
+        for part in parts:
+            found = False
             for word in self.SYNONYMS["dropped"]:
-                subject = re.sub(rf"\b{word}\b", "", subject)
+                if part.startswith(word):
+                    subjects = part[len(word):].strip()
+                    subjects_split = re.split(r'and', subjects)
+                    for s in subjects_split:
+                        subject = s.strip()
+                        if subject and subject not in dropped:
+                            dropped.append(subject)
+                        #endif
+                        found = True
+                        previous_was_dropped = True
+                        break
+                    #endfor
+                if not found:
+                    is_subject = True
+                    for word in self.SYNONYMS["dropped"]:
+                        if part.startswith(word):
+                            is_subject = False
+                        #endif
+                    #endfor
+                if previous_was_dropped and is_subject and part not in dropped:
+                    dropped.append(part)
+                #endif
+                previous_was_dropped = False
             #endfor
-            subject = subject.strip()
-            if subject and subject not in dropped_clean:
-                dropped_clean.append(subject)
-            #endif
         #endfor
-        return dropped_clean
+        return dropped
     #enddef
 
     def find_grade_subject_pairs(self, input): # Returns dictionary: {subject:grade}
