@@ -51,8 +51,135 @@ import re
 
 class GradeParser:
     SYNONYMS = {
-        "dropped": ['dropped', 'quit', 'left', 'failed', "didn't take", "didn't do", 'retook', 'gave up'],
-    }  # Dictionary of synonyms for all subjects
+        # All the ways to say someone dropped/abandoned a subject
+        "dropped": [
+            "dropped", "quit", "left", "failed", "gave up", "gave in", "gave away", "stopped",
+            "didn't take", "did not take", "didn't do", "did not do", "retook", "retake",
+            "withdrawn", "withdrew", "didn't pass", "did not pass", "scrapped", "removed", "excluded"
+        ],
+
+        # Canonical subjects and all the common ways they're written
+        "subjects": {
+            "mathematics": [
+                "math", "maths", "mathematics", "further maths", "further mathematics", "core maths", "pure maths"
+            ],
+            "computer science": [
+                "cs", "comp sci", "computing", "computer science", "information technology", "it", "ict", "informatics"
+            ],
+            "biology": [
+                "biology", "bio", "biological sciences"
+            ],
+            "physics": [
+                "physics", "phys"
+            ],
+            "chemistry": [
+                "chemistry", "chem"
+            ],
+            "psychology": [
+                "psychology", "psych"
+            ],
+            "english literature": [
+                "english literature", "lit", "english lit"
+            ],
+            "english language": [
+                "english language", "english lang", "eng lang"
+            ],
+            "history": [
+                "history", "hist"
+            ],
+            "geography": [
+                "geography", "geo"
+            ],
+            "business": [
+                "business", "business studies", "biz", "bs"
+            ],
+            "economics": [
+                "economics", "econ"
+            ],
+            "music": [
+                "music", "mus"
+            ],
+            "philosophy": [
+                "philosophy", "phil"
+            ],
+            "law": [
+                "law", "legal studies"
+            ],
+            "sociology": [
+                "sociology", "socio"
+            ],
+            "french": [
+                "french", "fr"
+            ],
+            "spanish": [
+                "spanish", "sp"
+            ],
+            "art": [
+                "art", "fine art", "visual art"
+            ],
+            "media studies": [
+                "media studies", "media", "media science"
+            ],
+            "design and technology": [
+                "design and technology", "d&t", "dt", "design tech", "product design"
+            ],
+            "politics": [
+                "politics", "government and politics", "govt and politics", "pol"
+            ],
+            "pharmacy": [
+                "pharmacy", "pharmacology"
+            ],
+            "accounting": [
+                "accounting", "accountancy"
+            ],
+        },
+
+        # Courses for degree-level interests, not A-levels
+        "courses": {
+            "medicine": [
+                "medicine", "med", "doctor", "mbbs", "medical", "medic", "med school"
+            ],
+            "computer science": [
+                "computer science", "cs", "comp sci", "software engineering", "computing", "informatics"
+            ],
+            "law": [
+                "law", "llb", "legal studies"
+            ],
+            "pharmacy": [
+                "pharmacy", "pharmacology", "pharma"
+            ],
+            "engineering": [
+                "engineering", "eng", "mechanical engineering", "electrical engineering", "civil engineering"
+            ],
+            "business": [
+                "business", "business management", "bba", "business admin", "accounting", "accountancy"
+            ],
+            "psychology": [
+                "psychology", "psych", "psyche"
+            ],
+            "music": [
+                "music", "music studies", "musician"
+            ],
+            "history": [
+                "history", "historian"
+            ],
+            "english": [
+                "english", "english literature", "english language", "english studies"
+            ],
+            "architecture": [
+                "architecture", "architect"
+            ],
+            "biology": [
+                "biology", "bio", "biological sciences"
+            ],
+            "sociology": [
+                "sociology", "socio"
+            ],
+            "art": [
+                "art", "fine art", "visual art", "artist"
+            ],
+        }
+    }
     GRADE_PATTERN = r'\bA\*|A|B|C|D|E|U\b'  # Finds grades like A*, B, U, etc
 
     def clean_input(self, input):  # Turns input to lowercase, replaces symbols, etc
