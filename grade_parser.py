@@ -107,10 +107,11 @@ class GradeParser:
                             is_subject = False
                         #endif
                     #endfor
-                if previous_was_dropped and is_subject and part not in dropped:
-                    dropped.append(part)
+                    if previous_was_dropped and is_subject and part not in dropped:
+                        dropped.append(part)
+                    #endif
+                    previous_was_dropped = False
                 #endif
-                previous_was_dropped = False
             #endfor
         #endfor
         return dropped
@@ -138,4 +139,4 @@ class GradeParser:
 #endclass
 
 parser = GradeParser()
-print(parser.find_dropped_subjects("I got A in maths and dropped chemistry, music, quit biology, failed english"))
+print(parser.find_dropped_subjects("I got A in maths and dropped chemistry and music and quit biology and failed english"))
