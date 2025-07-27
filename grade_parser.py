@@ -71,7 +71,22 @@ class GradeParser:
         return input
     #enddef
 
-    def find_dropped_subjects(self, input): # Returns list of dropped subjects to not include in search process
+    def find_dropped_subjects(self, input):  # Returns list of dropped subjects to not include in search process
+        def is_subject_word(word):
+            """
+            :param word: Represents a potential subject name or phrase, e.g. 'further maths'
+            :return: bool. True if subject has three words or less, otherwise False
+            """
+            words = word.split()
+            word_count = len(words)
+            if word_count <= 3:
+                return True
+            else:
+                return False
+            # endif
+
+        # enddef
+
         cleaned = self.clean_input(input)
         dropped = []
         # dropped_keywords = "|".join(map(re.escape, self.SYNONYMS["dropped"]))
