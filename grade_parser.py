@@ -15,6 +15,10 @@
     # "When I was little I always wanted to become a pilot. Now I got A in Math and D in Physics. What do I take"
     # I got no grade at all in Math they said take it again, and I got a U in Physics. I like Art.
 
+    # "I got A in maths, B in physics and dropped chemistry, music, and english and im interested in med"
+    # "I got A in maths, B in physics and dropped chemistry and music and english and im interested in med"
+
+
 # Case 1: I got A in maths, B in physics and dropped chemistry, and im interested in med
 # Pattern in this: GRADE*SUBJECT
 # NOTE: 'dropped' and its subject will be ignored as this is not a valid grade
@@ -73,11 +77,28 @@ class GradeParser:
         # dropped_keywords = "|".join(map(re.escape, self.SYNONYMS["dropped"]))
 
         for word in self.SYNONYMS["dropped"]:
-            pattern = rf"{word}\s+((?:[a-zA-Z]+(?:\s[a-zA-Z]+)?(?:,| and | |$))+)"
+            pattern = rf"{word}\s+([a-zA-Z\s]+?)(?=,|$)"
             matches = re.findall(pattern, cleaned)
-            dropped += matches
+            for match in matches:
+                for subject in re.split(r'and', match):
+                    subject = subject.strip()
+                    if subject:
+                        dropped.append(subject)
+                    #endif
+                #endfor
+            #endfor
         #endfor
-        return dropped
+        dropped_clean = []
+        for subject in dropped:
+            for word in self.SYNONYMS["dropped"]:
+                subject = re.sub(rf"\b{word}\b", "", subject)
+            #endfor
+            subject = subject.strip()
+            if subject and subject not in dropped_clean:
+                dropped_clean.append(subject)
+            #endif
+        #endfor
+        return dropped_clean
     #enddef
 
     def find_grade_subject_pairs(self, input): # Returns dictionary: {subject:grade}
@@ -100,3 +121,6 @@ class GradeParser:
         pass
     #enddef
 #endclass
+
+parser = GradeParser()
+print(parser.find_dropped_subjects("I got A in maths and dropped chemistry, music, quit biology, failed english"))
