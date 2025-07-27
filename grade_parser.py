@@ -4,19 +4,19 @@
 #
 # Make a class that will store the parsed grades and their subjects as well as perform the parsing
 # Some examples that i will be able to support:
-    # "I got A in maths, B in physics and dropped chemistry, and im interested in med"
-    # "I will get A* in further maths, maybe in Physics B and C in Chemistry. I am interested in Law"
-    # "My grades are AAB in maths, CS, physics"
-    # "I have A* in biology and I would love to pursue a career in music"
-    # "My predicted grades are A*AA in maths physics and biology"
-    # "My grade in math is A, physics B, chemistry A"
-    # "Math: A, Physics: B, Music: A, I want to do pharmacy"
-    # "I achieved ABB in English, history and geography, looking to apply for law"
-    # "When I was little I always wanted to become a pilot. Now I got A in Math and D in Physics. What do I take"
-    # I got no grade at all in Math they said take it again, and I got a U in Physics. I like Art.
+# "I got A in maths, B in physics and dropped chemistry, and im interested in med"
+# "I will get A* in further maths, maybe in Physics B and C in Chemistry. I am interested in Law"
+# "My grades are AAB in maths, CS, physics"
+# "I have A* in biology and I would love to pursue a career in music"
+# "My predicted grades are A*AA in maths physics and biology"
+# "My grade in math is A, physics B, chemistry A"
+# "Math: A, Physics: B, Music: A, I want to do pharmacy"
+# "I achieved ABB in English, history and geography, looking to apply for law"
+# "When I was little I always wanted to become a pilot. Now I got A in Math and D in Physics. What do I take"
+# I got no grade at all in Math they said take it again, and I got a U in Physics. I like Art.
 
-    # "I got A in maths, B in physics and dropped chemistry, music, and english and im interested in med"
-    # "I got A in maths, B in physics and dropped chemistry and music and english and im interested in med"
+# "I got A in maths, B in physics and dropped chemistry, music, and english and im interested in med"
+# "I got A in maths, B in physics and dropped chemistry and music and english and im interested in med"
 
 
 # Case 1: I got A in maths, B in physics and dropped chemistry, and im interested in med
@@ -48,13 +48,14 @@
 
 import re
 
+
 class GradeParser:
     SYNONYMS = {
         "dropped": ['dropped', 'quit', 'left', 'failed', "didn't take", "didn't do", 'retook', 'gave up'],
-    } # Dictionary of synonyms for all subjects
-    GRADE_PATTERN = r'\bA\*|A|B|C|D|E|U\b' # Finds grades like A*, B, U, etc
+    }  # Dictionary of synonyms for all subjects
+    GRADE_PATTERN = r'\bA\*|A|B|C|D|E|U\b'  # Finds grades like A*, B, U, etc
 
-    def clean_input(self, input): # Turns input to lowercase, replaces symbols, etc
+    def clean_input(self, input):  # Turns input to lowercase, replaces symbols, etc
         input = input.replace("and", ",").lower().strip()
         parts = input.split(",")
 
@@ -63,13 +64,14 @@ class GradeParser:
         for p in parts:
             if p.strip():
                 clean_parts.append(p.strip())
-            #endif
-        #endfor
+            # endif
+        # endfor
 
         input = ", ".join(clean_parts)
 
         return input
-    #enddef
+
+    # enddef
 
     def find_dropped_subjects(self, input):  # Returns list of dropped subjects to not include in search process
         def is_subject_word(word):
@@ -89,14 +91,13 @@ class GradeParser:
 
         cleaned = self.clean_input(input)
         dropped = []
-        # dropped_keywords = "|".join(map(re.escape, self.SYNONYMS["dropped"]))
 
         cleaned = cleaned.split(",")
 
         parts = []
         for x in cleaned:
             parts.append(x.strip())
-        #endfor
+        # endfor
 
         previous_was_dropped = False
 
@@ -108,50 +109,61 @@ class GradeParser:
                     subjects_split = re.split(r'and', subjects)
                     for s in subjects_split:
                         subject = s.strip()
-                        if subject and subject not in dropped:
+                        if subject and subject not in dropped and is_subject_word(subject):
                             dropped.append(subject)
-                        #endif
-                        found = True
-                        previous_was_dropped = True
+                        # endif
+                    # endfor
+                    found = True
+                    previous_was_dropped = True
+                    break
+                # endif
+            # endfor
+            # endfor
+            if not found:
+                is_subject = True
+                for word in self.SYNONYMS["dropped"]:
+                    if part.startswith(word):
+                        is_subject = False
                         break
-                    #endfor
-                if not found:
-                    is_subject = True
-                    for word in self.SYNONYMS["dropped"]:
-                        if part.startswith(word):
-                            is_subject = False
-                        #endif
-                    #endfor
-                    if previous_was_dropped and is_subject and part not in dropped:
-                        dropped.append(part)
-                    #endif
-                    previous_was_dropped = False
-                #endif
-            #endfor
-        #endfor
+                    # endif
+                # endfor
+                if previous_was_dropped and is_subject and part not in dropped and is_subject_word(part):
+                    dropped.append(part)
+                # endif
+                previous_was_dropped = False
+            # endif
+        # endfor
         return dropped
-    #enddef
 
-    def find_grade_subject_pairs(self, input): # Returns dictionary: {subject:grade}
-        pass
-    #enddef
+    # enddef
 
-    def find_multi_grades(self, input): # Looks for AAA/AAB and assigns to subjects listed after
+    def find_grade_subject_pairs(self, input):  # Returns dictionary: {subject:grade}
         pass
-    #enddef
 
-    def normalize_subject(self, subject): # Turns synonyms into the main subject name
-        pass
-    #enddef
+    # enddef
 
-    def find_course_interest(self, input): # Looks for course of interest
+    def find_multi_grades(self, input):  # Looks for AAA/AAB and assigns to subjects listed after
         pass
-    #enddef
+
+    # enddef
+
+    def normalize_subject(self, subject):  # Turns synonyms into the main subject name
+        pass
+
+    # enddef
+
+    def find_course_interest(self, input):  # Looks for course of interest
+        pass
+
+    # enddef
 
     def parse(self, input):
         pass
-    #enddef
-#endclass
+    # enddef
+
+
+# endclass
 
 parser = GradeParser()
-print(parser.find_dropped_subjects("I got A in maths and dropped chemistry and music and quit biology and failed english"))
+print(parser.find_dropped_subjects(
+    "I got A in maths and dropped chemistry and music and quit biology and failed english and i am interested in medicine"))
