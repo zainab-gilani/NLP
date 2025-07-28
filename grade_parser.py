@@ -388,6 +388,7 @@ class GradeParser:
         :param input: str. User input describing subjects, grades, and any dropped/abandoned subjects.
         :return: str. Cleaned input with dropped subjects removed.
         """
+
         def is_subject_word(word):
             """
             :param word: Represents a potential subject name or phrase, e.g. 'further maths'
@@ -488,19 +489,46 @@ class GradeParser:
                      Example: {'mathematics': 'A', 'physics': 'B', 'biology': 'B'}
                      Returns an empty dict if no multi-grade pattern is found.
         """
+        results = {}
+
         # Separates the chunk of grades into singular elements in a list
-        grade_pattern = r"(?:A\*|A|B|C|D|E|U){1,5}"
-        separate_grades = []
+        pattern = r'\b([A\*ABCDUE]{2,5})\b\s+in\s+([a-zA-Z\s,]+)'
+        matches = re.findall(pattern, input)
 
-        grades = re.findall(grade_pattern, input)
+        for match in matches:
+            grades_str = match[0]
+            subjects_str = match[1]
 
-        for g in grades:
-            for char in g:
-                separate_grades.append(char)
+            grades = []
+            for char in grades_str:
+                grades.append(char)
             # endfor
-        # endfor
 
-        return separate_grades
+            subjects_str_replaced = subjects_str.replace("and", ",")
+            subjects_raw_list = subjects_str_replaced.split(",")
+
+            subjects_list = []
+            for subject in subjects_raw_list:
+                subject_clean = subject.lower().strip()
+                if subject_clean:
+                    subjects_list.append(subject_clean)
+                # endif
+                # endfor
+
+                for i in range(len(subjects_list)):
+                    self.normalize_subject(subjects_list[i])
+                    if i < len(grades):
+                        grade = grades[i]
+                    else:
+                        grade = grades[-1]
+                    # endif
+                    results[subject] = grade
+                # endfor
+
+                chunk = f"{grades_str}: {subjects_str}"
+                input = input.replace(chunk, "")
+
+        return f"Results: {results}, Input: {input}"
 
     # enddef
 
@@ -540,4 +568,4 @@ class GradeParser:
 # endclass
 
 parser = GradeParser()
-print(parser.find_multi_grades("AAB in Physics"))
+print(parser.find_multi_grades("AAB in Physics and math and chem"))
