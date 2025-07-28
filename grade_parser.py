@@ -451,9 +451,19 @@ class GradeParser:
     # enddef
 
     def normalize_subject(self, subject):  # Turns synonyms into the main subject name
-        cleaned = self.clean_input(input)
+        subject = subject.lower().strip()
 
-
+        for canon_subject in self.SYNONYMS["subjects"]:
+            if subject == canon_subject:
+                return canon_subject
+            #endif
+        #endfor
+        for synonym in self.SYNONYMS["subjects"]:
+            if subject == synonym:
+                return canon_subject
+            #endif
+        #endfor
+        return subject
     # enddef
 
     def find_course_interest(self, input):  # Looks for course of interest
