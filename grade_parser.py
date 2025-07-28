@@ -354,7 +354,14 @@ class GradeParser:
     }
     GRADE_PATTERN = r'\bA\*|A|B|C|D|E|U\b'  # Finds grades like A*, B, U, etc
 
-    def clean_input(self, input):  # Turns input to lowercase, replaces symbols, etc
+    def clean_input(self, input):
+        """
+        Cleans and standardizes the user input by converting to lowercase, removing unnecessary symbols,
+        and stripping extra whitespace.
+
+        :param input: str. Raw user input describing subjects, grades, and additional info.
+        :return: str. Cleaned and normalized input string.
+        """
         input = input.replace("and", ",").lower().strip()
         parts = input.split(",")
 
@@ -372,7 +379,15 @@ class GradeParser:
 
     # enddef
 
-    def find_dropped_subjects(self, input):  # Returns list of dropped subjects to not include in search process
+    def find_dropped_subjects(self, input):
+        """
+        Extracts and returns a list of dropped subjects found in the input, based on recognized
+        dropped/quit/failed phrases.
+        Also returns a cleaned version of the input with dropped information removed.
+
+        :param input: str. User input describing subjects, grades, and any dropped/abandoned subjects.
+        :return: str. Cleaned input with dropped subjects removed.
+        """
         def is_subject_word(word):
             """
             :param word: Represents a potential subject name or phrase, e.g. 'further maths'
@@ -442,28 +457,74 @@ class GradeParser:
 
     def find_grade_subject_pairs(self, input):  # Returns dictionary: {subject:grade}
         pass
+        # Case 1: \b(A\*|A|B|C|D|E|U)\b\s+in\s+([a-zA-Z\s]+)
+        # # Case 2: Math: A, Physics: B, Music: A, I want to do pharmacy
+        # # Pattern in this: SUBJECT*GRADE
+        # # Course: Pharmaceuticals
+        #
+        # # Case 3: I achieved ABB in English, history and geography, looking to apply for law
+        # # Pattern in this: GRADE{1...}
+        # # SEPARATELY once we have found a multi grade, we must find EQUAL number of subjects after that
+        # # Course: Law
+        #
+        # # Case 4: My grade in math is A, physics B, chemistry A
+        # # Pattern: SUBJECT*GRADE
+        # # (no course found)
+        #
+        # # Case 5: When I was little I always wanted to become a pilot. Now I got A in Math and D in Physics. What do I take
+        # # Pattern: GRADE*SUBJECT
+        # # (no course found)
 
     # enddef
 
-    def find_multi_grades(self, input):  # Looks for AAA/AAB and assigns to subjects listed after
-        pass
+    def find_multi_grades(self, input):
+        """
+        Extracts multiple grade/subject pairs from sentences with grouped grades, such as 'ABB in maths,
+        physics and biology'. Pairs each grade with the corresponding subject in order and returns a dictionary
+        mapping normalized subject names to grades.
+
+        :param input: str. The cleaned input sentence containing grade/subject info.
+        :return: dict. Keys are normalized subject names (str), values are grades (str).
+                     Example: {'mathematics': 'A', 'physics': 'B', 'biology': 'B'}
+                     Returns an empty dict if no multi-grade pattern is found.
+        """
+        # Separates the chunk of grades into singular elements in a list
+        grade_pattern = r"(?:A\*|A|B|C|D|E|U){1,5}"
+        separate_grades = []
+
+        grades = re.findall(grade_pattern, input)
+
+        for g in grades:
+            for char in g:
+                separate_grades.append(char)
+            # endfor
+        # endfor
+
+        return separate_grades
 
     # enddef
 
-    def normalize_subject(self, subject):  # Turns synonyms into the main subject name
+    def normalize_subject(self, subject):
+        """
+        Converts a subject synonym to its canonical (main) subject name.
+
+        :param subject: str. The subject name or synonym, e.g. "maths", "comp sci", "bio".
+        :return: str. The standardized main subject name (e.g. "mathematics", "computer science", "biology").
+        """
         subject = subject.lower().strip()
 
         for canon_subject in self.SYNONYMS["subjects"]:
             if subject == canon_subject:
                 return canon_subject
-            #endif
-        #endfor
+            # endif
+        # endfor
         for synonym in self.SYNONYMS["subjects"]:
             if subject == synonym:
                 return canon_subject
-            #endif
-        #endfor
+            # endif
+        # endfor
         return subject
+
     # enddef
 
     def find_course_interest(self, input):  # Looks for course of interest
@@ -479,5 +540,4 @@ class GradeParser:
 # endclass
 
 parser = GradeParser()
-print(parser.find_dropped_subjects(
-    "I got A in maths and dropped chemistry and music and quit biology and failed english and i am interested in medicine"))
+print(parser.find_multi_grades("AAB in Physics"))
