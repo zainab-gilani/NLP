@@ -499,14 +499,17 @@ class GradeParser:
             grades_str = match[0]
             subjects_str = match[1]
 
+            # Splits grades_str into a list
             grades = []
             for char in grades_str:
                 grades.append(char)
             # endfor
 
+            # Cleans up subject_str, replacing "and" with "," for splitting
             subjects_str_replaced = subjects_str.replace("and", ",")
             subjects_raw_list = subjects_str_replaced.split(",")
 
+            # Cleans each subject and adds to list
             subjects_list = []
             for subject in subjects_raw_list:
                 subject_clean = subject.lower().strip()
@@ -515,17 +518,25 @@ class GradeParser:
                 # endif
                 # endfor
 
+                # Pairs each subject with grade
                 for i in range(len(subjects_list)):
+                    # Uses normalize_subject function to clean input and remove unnecessary parts
                     self.normalize_subject(subjects_list[i])
+                    # Assigns grade by position
                     if i < len(grades):
+                        # Checks to see if there is the same amount of grades and subjects, and pairs them in order
                         grade = grades[i]
                     else:
+                        # If there are more subjects than grades by mistake, the last grade is repeated
                         grade = grades[-1]
                     # endif
+                    # Adds normalized subject and assigned grade to dictionary
                     results[subject] = grade
                 # endfor
 
-                chunk = f"{grades_str}: {subjects_str}"
+                # Removes multi-grade and subject part of the sentence
+                # so other functions don't have to parse it again
+                chunk = f"{grades_str} in {subjects_str}"
                 input = input.replace(chunk, "")
 
         return f"Results: {results}, Input: {input}"
