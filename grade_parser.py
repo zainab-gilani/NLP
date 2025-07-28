@@ -350,7 +350,6 @@ class GradeParser:
                 "media production", "film studies", "film and media", "broadcast media", "mass communication",
                 "media degree"
             ],
-
         }
     }
     GRADE_PATTERN = r'\bA\*|A|B|C|D|E|U\b'  # Finds grades like A*, B, U, etc
@@ -400,6 +399,7 @@ class GradeParser:
         # endfor
 
         previous_was_dropped = False
+        cleaned_sentence_parts = []
 
         for part in parts:
             found = False
@@ -429,11 +429,14 @@ class GradeParser:
                 # endfor
                 if previous_was_dropped and is_subject and part not in dropped and is_subject_word(part):
                     dropped.append(part)
+                else:
+                    cleaned_sentence_parts.append(part)
                 # endif
                 previous_was_dropped = False
             # endif
         # endfor
-        return dropped
+        cleaned_sentence = ", ".join(cleaned_sentence_parts)
+        return cleaned_sentence
 
     # enddef
 
@@ -448,7 +451,8 @@ class GradeParser:
     # enddef
 
     def normalize_subject(self, subject):  # Turns synonyms into the main subject name
-        pass
+        cleaned = self.clean_input(input)
+
 
     # enddef
 
