@@ -518,26 +518,26 @@ class GradeParser:
                 # endif
                 # endfor
 
-                # Pairs each subject with grade
-                for i in range(len(subjects_list)):
-                    # Uses normalize_subject function to clean input and remove unnecessary parts
-                    self.normalize_subject(subjects_list[i])
-                    # Assigns grade by position
-                    if i < len(grades):
-                        # Checks to see if there is the same amount of grades and subjects, and pairs them in order
-                        grade = grades[i]
-                    else:
-                        # If there are more subjects than grades by mistake, the last grade is repeated
-                        grade = grades[-1]
-                    # endif
-                    # Adds normalized subject and assigned grade to dictionary
-                    results[subject] = grade
-                # endfor
+            # Pairs each subject with grade
+            for i in range(len(subjects_list)):
+                # Uses normalize_subject function to clean input and remove unnecessary parts
+                subject_norm = self.normalize_subject(subjects_list[i])
+                # Assigns grade by position
+                if i < len(grades):
+                    # Checks to see if there is the same amount of grades and subjects, and pairs them in order
+                    grade = grades[i]
+                else:
+                    # If there are more subjects than grades by mistake, the last grade is repeated
+                    grade = grades[-1]
+                # endif
+                # Adds normalized subject and assigned grade to dictionary
+                results[subject_norm] = grade
+            # endfor
 
-                # Removes multi-grade and subject part of the sentence
-                # so other functions don't have to parse it again
-                chunk = f"{grades_str} in {subjects_str}"
-                input = input.replace(chunk, "")
+            # Removes multi-grade and subject part of the sentence
+            # so other functions don't have to parse it again
+            chunk = f"{grades_str} in {subjects_str}"
+            input = input.replace(chunk, "")
 
         return f"Results: {results}, Input: {input}"
 
@@ -552,15 +552,15 @@ class GradeParser:
         """
         subject = subject.lower().strip()
 
-        for canon_subject in self.SYNONYMS["subjects"]:
+        for canon_subject, synonyms in self.SYNONYMS["subjects"].items():
             if subject == canon_subject:
                 return canon_subject
-            # endif
-        # endfor
-        for synonym in self.SYNONYMS["subjects"]:
-            if subject == synonym:
-                return canon_subject
-            # endif
+            #endif
+            for synonym in synonyms:
+                if subject == synonym:
+                    return canon_subject
+                # endif
+            # endfor
         # endfor
         return subject
 
