@@ -501,9 +501,19 @@ class GradeParser:
 
             # Splits grades_str into a list
             grades = []
-            for char in grades_str:
-                grades.append(char)
-            # endfor
+            i = 0
+            while i < len(grades_str):
+                # If current grade is "A" and next grade is "*", join together to make A*
+                if grades_str[i] == "A" and (i+1) < len(grades_str) and grades_str[i+1] == "*":
+                    grades.append("A*")
+                    # Skips over the "*"
+                    i += 2
+                else:
+                    # Else, add the single letter grade
+                    grades.append(grades_str[i])
+                    i += 1
+                #endif
+            #endwhile
 
             # Cleans up subject_str, replacing "and" with "," for splitting
             subjects_str_replaced = subjects_str.replace("and", ",")
@@ -579,4 +589,4 @@ class GradeParser:
 # endclass
 
 parser = GradeParser()
-print(parser.find_multi_grades("AAB in Physics and math and chem"))
+print(parser.find_multi_grades("A*AC in Physics and math and chem"))
