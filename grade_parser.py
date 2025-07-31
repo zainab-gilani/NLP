@@ -56,8 +56,6 @@ import re
 from synonyms import SYNONYMS
 
 class GradeParser:
-    # Dictionary of synonyms for all subjects
-
     GRADE_PATTERN = r'\bA\*|A|B|C|D|E|U\b'  # Finds grades like A*, B, U, etc
 
     def clean_input(self, input: str) -> str:
@@ -68,17 +66,20 @@ class GradeParser:
         :param input: str. Raw user input describing subjects, grades, and additional info.
         :return: str. Cleaned and normalized input string.
         """
+        # Replace 'and' with ',' for easier splitting, lowercase the whole string, strip extra spaces
         input = input.replace("and", ",").lower().strip()
         parts = input.split(",")
 
         clean_parts = []
 
+        # Remove empty or whitespace-only parts
         for p in parts:
             if p.strip():
                 clean_parts.append(p.strip())
             # endif
         # endfor
 
+        # Join the cleaned parts back together, comma separated
         input = ", ".join(clean_parts)
 
         return input
@@ -110,11 +111,14 @@ class GradeParser:
 
         # enddef
 
+
         cleaned = self.clean_input(input)
         dropped = []
 
+        # Split by commas for easier parsing
         cleaned = cleaned.split(",")
 
+        # Clean up each chunk for further processing
         parts = []
         for x in cleaned:
             parts.append(x.strip())
@@ -123,11 +127,14 @@ class GradeParser:
         previous_was_dropped = False
         cleaned_sentence_parts = []
 
+        # Loop through each part/chunk and look for dropped subjects
         for part in parts:
             found = False
             for word in SYNONYMS["dropped"]:
                 if part.startswith(word):
+                    # Remove the dropped/quit/failed word from the chunk
                     subjects = part[len(word):].strip()
+                    # Split subjects by 'and'
                     subjects_split = re.split(r'and', subjects)
 
                     for s in subjects_split:
@@ -143,6 +150,7 @@ class GradeParser:
             # endfor
 
             if not found:
+                # Not a dropped/quit/failed phrase
                 is_subject = True
                 for word in SYNONYMS["dropped"]:
                     if part.startswith(word):
@@ -151,9 +159,11 @@ class GradeParser:
                     # endif
                 # endfor
 
+                # If previous chunk was a dropped one, and this chunk is a subject, add to dropped
                 if previous_was_dropped and is_subject and part not in dropped and is_subject_word(part):
                     dropped.append(part)
                 else:
+                    # Otherwise, keep this chunk in the cleaned sentence
                     cleaned_sentence_parts.append(part)
                 # endif
 
@@ -161,12 +171,13 @@ class GradeParser:
             # endif
         # endfor
 
+        # Join all non-dropped chunks back together
         cleaned_sentence = ", ".join(cleaned_sentence_parts)
         return cleaned_sentence
 
     # enddef
 
-    def find_grade_subject_pairs(self, input):
+    def find_grade_subject_pairs(self, input: str) -> :
         """
         Extracts individual subject-grade pairs from the remaining input,
         using several patterns to catch all possible combos.
@@ -176,6 +187,7 @@ class GradeParser:
 
         results = {}
 
+        # Patterns for different input formats
         patterns = [
             (r"(A\*|A|B|C|D|E|U)\s+in\s+([a-zA-Z\s]+)", "grade in subject"),  # Case 1
             (r"([a-zA-Z\s]+)[\:\-]?\s*(A\*|A|B|C|D|E|U)", "subject: grade"),  # Case 2
@@ -188,9 +200,11 @@ class GradeParser:
 
         cleaned_sentence = self.find_dropped_subjects(input)
 
+        # Try all patterns to catch different formats
         for pattern, mode in patterns:
             matches = re.findall(pattern, cleaned_sentence)
 
+            # Debug: show matches for each pattern
             print(f"Pattern: {pattern}, Matches: {matches}")
 
             for match in matches:
@@ -204,8 +218,10 @@ class GradeParser:
                     subject, grade = match[0], match[1]
                 # endif
 
+                # Normalize subject to main name
                 subject_norm = self.normalize_subject(subject.strip())
 
+                # Only add if not already in the dict
                 if subject not in cleaned_sentence and subject not in results:
                     results[subject_norm] = grade
                 # endif
@@ -294,20 +310,21 @@ class GradeParser:
 
     def normalize_subject(self, subject):
         """
-        Converts a subject synonym to its canonical (main) subject name.
+        Converts a subject synonym to its main) subject name.
 
         :param subject: str. The subject name or synonym, e.g. "maths", "comp sci", "bio".
         :return: str. The standardized main subject name (e.g. "mathematics", "computer science", "biology").
         """
         subject = subject.lower().strip()
 
-        for canon_subject, synonyms in SYNONYMS["subjects"].items():
-            if subject == canon_subject:
-                return canon_subject
+        # Loop through all main subjects and their synonyms
+        for main_subject, synonyms in SYNONYMS["subjects"].items():
+            if subject == main_subject:
+                return main_subject
             # endif
             for synonym in synonyms:
                 if subject == synonym:
-                    return canon_subject
+                    return main_subject
                 # endif
             # endfor
         # endfor
