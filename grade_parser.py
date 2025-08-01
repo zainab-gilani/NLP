@@ -187,18 +187,20 @@ class GradeParser:
 
         results: dict[str, str] = {}
 
+        cleaned_sentence: str = self.find_dropped_subjects(input)
+
         # Patterns for different input formats
         patterns: list[tuple[str, str]] = [
-            (r"(A\*|A|B|C|D|E|U)\s+in\s+([a-zA-Z\s]+)", "grade in subject"),  # Case 1
-            (r"([a-zA-Z\s]+)[\:\-]?\s*(A\*|A|B|C|D|E|U)", "subject: grade"),  # Case 2
-            (r"grade in ([a-zA-Z\s]+)(A\*|A|B|C|D|E|U)", "(...) subject is grade"),  # Case 4 pt 1
-            (r"\s+([a-zA-Z\s]+)\s+(A\*|A|B|C|D|E|U)", "subject grade")  # Case 4 pt 2
+            # Grade in subject (e.g. "A in maths")
+            (r"(A\*|A|B|C|D|E|U)\s+in\s+([a-zA-Z\s]+?)(?:,|$)", "grade_in_subject"),
+            # Subject: grade or subject - grade (e.g. "maths: A" or "maths - A")
+            (r"([a-zA-Z\s]+?)\s*[:\-]\s*(A\*|A|B|C|D|E|U)", "subject_colon_grade"),
+            # Subject grade (e.g. "physics B", "biology A")
+            (r"([a-zA-Z\s]+?)\s+(A\*|A|B|C|D|E|U)(?:,|$)", "subject_grade")
         ]
 
         subject: str = ""
         grade: str = ""
-
-        cleaned_sentence: str = self.find_dropped_subjects(input)
 
         # Try all patterns to catch different formats
         for pattern, mode in patterns:
@@ -208,15 +210,17 @@ class GradeParser:
             print(f"Pattern: {pattern}, Matches: {matches}")
 
             for match in matches:
-                if mode == "grade in subject":
-                    grade, subject = match[0], match[1]
-                elif mode == "subject: grade":
-                    subject, grade = match[0], match[1]
-                elif mode == "(...) subject is grade":
-                    subject, grade = match[0], match[1]
-                elif mode == "subject grade":
-                    subject, grade = match[0], match[1]
+                if mode == "grade_in_subject":
+                    grade: str = match[0]
+                    subject: str = match[1]
+                else: # Subject first, then grade
+                    subject: str = match[0]
+                    grade: str = match[1]
                 # endif
+
+                # Clean subject and grade
+                subject = subject.strip().lower()
+                grade = grade.strip().lower()
 
                 # Normalize subject to main name
                 subject_norm: str = self.normalize_subject(subject.strip())
@@ -346,6 +350,6 @@ class GradeParser:
 
 parser = GradeParser()
 
-# print(parser.find_grade_subject_pairs("I got A in maths, B in physics and dropped chemistry, and im interested in med"))
-print(parser.find_multi_grades("You listen to me now, my grades are AAB in maths, CS, physics"))
+print(parser.find_grade_subject_pairs("I got A in maths, B in physics and dropped chemistry, and im interested in med"))
+# print(parser.find_multi_grades("You listen to me now, my grades are AAB in maths, CS, physics"))
 
