@@ -177,7 +177,7 @@ class GradeParser:
 
     # enddef
 
-    def find_grade_subject_pairs(self, input: str) -> dict:
+    def find_grade_subject_pairs(self, input: str) -> dict[str, str]:
         """
         Extracts individual subject-grade pairs from the remaining input,
         using several patterns to catch all possible combos.
@@ -191,42 +191,47 @@ class GradeParser:
 
         # Patterns for different input formats
         patterns: list[tuple[str, str]] = [
-            # Grade in subject (e.g. "A in maths")
-            (r"(A\*|A|B|C|D|E|U)\s+in\s+([a-zA-Z\s]+?)(?:,|$)", "grade_in_subject"),
-            # Subject: grade or subject - grade (e.g. "maths: A" or "maths - A")
+            (r"\b(A\*|A|B|C|D|E|U)\b\s+in\s+([a-zA-Z\s]+?)(?:,|$)", "grade_in_subject"),
             (r"([a-zA-Z\s]+?)\s*[:\-]\s*(A\*|A|B|C|D|E|U)", "subject_colon_grade"),
-            # Subject grade (e.g. "physics B", "biology A")
             (r"([a-zA-Z\s]+?)\s+(A\*|A|B|C|D|E|U)(?:,|$)", "subject_grade")
         ]
 
-        subject: str = ""
-        grade: str = ""
+        print("CLEANED SENTENCE:", cleaned_sentence)
+        for pattern, _ in patterns:
+            print("Pattern:", pattern, re.IGNORECASE)
+            print("Matches:", re.findall(pattern, cleaned_sentence, re.IGNORECASE))
+        #endfor
 
         # Try all patterns to catch different formats
         for pattern, mode in patterns:
-            matches: list[tuple[str, str]] = re.findall(pattern, cleaned_sentence)
+            matches: list[tuple[str, str]] = re.findall(pattern, cleaned_sentence, re.IGNORECASE)
 
             # Debug: show matches for each pattern
             print(f"Pattern: {pattern}, Matches: {matches}")
 
             for match in matches:
                 if mode == "grade_in_subject":
-                    grade: str = match[0]
-                    subject: str = match[1]
-                else: # Subject first, then grade
-                    subject: str = match[0]
-                    grade: str = match[1]
+                    # Pattern matches will be either 2 or 3 groups due to (?:^|[^a-zA-Z])
+                    if len(match) == 3:
+                        grade = match[1]
+                        subject = match[2]
+                    else: # Subject first, then grade
+                        grade = match[0]
+                        subject = match[1]
+                else:
+                    subject = match[0]
+                    grade = match[1]
                 # endif
 
                 # Clean subject and grade
                 subject = subject.strip().lower()
-                grade = grade.strip().lower()
+                grade = grade.strip().upper()
 
                 # Normalize subject to main name
-                subject_norm: str = self.normalize_subject(subject.strip())
+                subject_norm: str = self.normalize_subject(subject)
 
                 # Only add if not already in the dict
-                if subject not in cleaned_sentence and subject not in results:
+                if subject_norm and subject_norm not in results:
                     results[subject_norm] = grade
                 # endif
             # endfor
@@ -251,7 +256,7 @@ class GradeParser:
 
         # Separates the chunk of grades into singular elements in a list
         pattern: str = r'\b([A\*ABCDUE]{2,5})\b\s+in\s+([a-zA-Z\s,]+)'
-        matches: list[tuple[str, str]] = re.findall(pattern, input)
+        matches: list[tuple[str, str]] = re.findall(pattern, input, re.IGNORECASE)
 
         for match in matches:
             grades_str: str = match[0]
