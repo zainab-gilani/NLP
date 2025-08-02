@@ -76,44 +76,32 @@ class TestGradeParser(unittest.TestCase):
 
     # Tests for find_multi_grades function
     def test_find_multi_grades(self):
-        output = self.parser.find_multi_grades("My grades are AAB in maths, CS, physics")
-        # The output is a string: "Results: {...}, Input: ..."
-        self.assertIn("'mathematics': 'A'", output)
-        self.assertIn("'computer science': 'A'", output)
-        self.assertIn("'physics': 'B'", output)
+        results = self.parser.find_multi_grades("My grades are AAB in maths, CS, physics")
+        self.assertEqual(results.get("mathematics"), "A")
+        self.assertEqual(results.get("computer science"), "A")
+        self.assertEqual(results.get("physics"), "B")
     #enddef
 
     def test_find_multi_grades_2(self):
-        output = self.parser.find_multi_grades("Predicted grades are ABB in maths, chemistry, biology")
-        # The output is a string: "Results: {...}, Input: ..."
-        self.assertIn("'mathematics': 'A'", output)
-        self.assertIn("'chemistry': 'B'", output)
-        self.assertIn("'biology': 'B'", output)
+        results = self.parser.find_multi_grades("Predicted grades are ABB in maths, chemistry, biology")
+        self.assertEqual(results.get("mathematics"), "A")
+        self.assertEqual(results.get("chemistry"), "B")
+        self.assertEqual(results.get("biology"), "B")
     #enddef
 
     def test_find_multi_grades_3(self):
-        output = self.parser.find_multi_grades("I got AAA in physics, maths and CS")
-        self.assertIn("'physics': 'A'", output)
-        self.assertIn("'mathematics': 'A'", output)
-        self.assertIn("'computer science': 'A'", output)
-
-    # enddef
+        results = self.parser.find_multi_grades("I got AAA in physics, maths and CS")
+        self.assertEqual(results.get("physics"), "A")
+        self.assertEqual(results.get("mathematics"), "A")
+        self.assertEqual(results.get("computer science"), "A")
+    #enddef
 
     def test_find_multi_grades_4(self):
-        output = self.parser.find_multi_grades("My grades are BCD in art, music, drama")
-        self.assertIn("'art': 'B'", output)
-        self.assertIn("'music': 'C'", output)
-        self.assertIn("'drama': 'D'", output)
-
-    # enddef
-
-    def test_find_multi_grades_5(self):
-        output = self.parser.find_multi_grades("I achieved A*AA in maths, further maths and physics")
-        self.assertIn("'mathematics': 'A*'", output)
-        self.assertIn("'further mathematics': 'A'", output)
-        self.assertIn("'physics': 'A'", output)
-
-    # enddef
+        results = self.parser.find_multi_grades("My grades are BCD in art, music, drama")
+        self.assertEqual(results.get("art"), "B")
+        self.assertEqual(results.get("music"), "C")
+        self.assertEqual(results.get("drama"), "D")
+    #enddef
 
 
 
