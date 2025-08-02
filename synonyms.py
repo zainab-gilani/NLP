@@ -35,7 +35,7 @@ SYNONYMS = {
             "psychology", "psych", "applied psychology"
         ],
         "english literature": [
-            "english literature", "lit", "english lit", "literature", "literary studies"
+            "english literature", "lit", "english lit", "literature", "literary studies", "eng lit"
         ],
         "english language": [
             "english language", "english lang", "eng lang", "lang", "language", "english studies"
@@ -44,7 +44,7 @@ SYNONYMS = {
             "history", "hist", "world history", "ancient history", "modern history"
         ],
         "geography": [
-            "geography", "geo", "physical geography", "human geography"
+            "geography", "geo", "physical geography", "human geography", "geog"
         ],
         "business": [
             "business", "business studies", "biz", "bs", "business admin", "business administration", "commerce"
@@ -158,7 +158,7 @@ SYNONYMS = {
             "computer science", "cs", "comp sci", "software engineering", "computing", "informatics",
             "information systems", "ict", "information tech",
             "data science", "artificial intelligence", "ai", "cybersecurity", "computer engineering",
-            "digital technology", "machine learning"
+            "digital technology", "machine learning", "comp science"
         ],
 
         "law": [
