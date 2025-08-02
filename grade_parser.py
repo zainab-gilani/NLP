@@ -108,7 +108,6 @@ class GradeParser:
             else:
                 return False
             # endif
-
         # enddef
 
 
@@ -135,7 +134,8 @@ class GradeParser:
                     # Remove the dropped/quit/failed word from the chunk
                     subjects: str = part[len(word):].strip()
                     # Split subjects by 'and'
-                    subjects_split: list[str] = re.split(r'and', subjects)
+                    subjects_split: list[str] = re.split(r'and|,', subjects)
+
 
                     for s in subjects_split:
                         subject: str = s.strip()
@@ -171,6 +171,22 @@ class GradeParser:
             # endif
         # endfor
 
+        # Remove any chunk only if it contains dropped subjects
+        final_cleaned_parts: list[str] = []
+
+        for chunk in cleaned_sentence_parts:
+            keep: bool = True
+            for subject in dropped:
+                if chunk.strip() == subject or chunk.strip().startswith(subject):
+                    keep = False
+                    break
+                #endif
+            #endfor
+            if keep:
+                final_cleaned_parts.append(chunk)
+            #endif
+        #endfor
+
         # Join all non-dropped chunks back together
         cleaned_sentence: str = ", ".join(cleaned_sentence_parts)
         return cleaned_sentence
@@ -193,7 +209,8 @@ class GradeParser:
         patterns: list[tuple[str, str]] = [
             (r"\b(A\*|A|B|C|D|E|U)\b\s+in\s+([a-zA-Z\s]+?)(?:,|$)", "grade_in_subject"),
             (r"([a-zA-Z\s]+?)\s*[:\-]\s*(A\*|A|B|C|D|E|U)", "subject_colon_grade"),
-            (r"([a-zA-Z\s]+?)\s+(A\*|A|B|C|D|E|U)(?:,|$)", "subject_grade")
+            (r"([a-zA-Z\s]+?)\s+(A\*|A|B|C|D|E|U)(?:,|$)", "subject_grade"),
+            (r"(?:my grade in|in)\s+([a-zA-Z\s]+?)\s+is\s+(A\*|A|B|C|D|E|U)", "in_subject_is_grade"),
         ]
 
         print("CLEANED SENTENCE:", cleaned_sentence)
@@ -268,13 +285,13 @@ class GradeParser:
 
             while i < len(grades_str):
                 # If current grade is "A" and next grade is "*", join together to make A*
-                if grades_str[i] == "A" and (i + 1) < len(grades_str) and grades_str[i + 1] == "*":
+                if grades_str[i].upper() == "A" and (i + 1) < len(grades_str) and grades_str[i + 1] == "*":
                     grades.append("A*")
                     # Skips over the "*"
                     i += 2
                 else:
                     # Else, add the single letter grade
-                    grades.append(grades_str[i])
+                    grades.append(grades_str[i].upper())
                     i += 1
                 # endif
             # endwhile
@@ -313,7 +330,7 @@ class GradeParser:
             chunk: str = f"{grades_str} in {subjects_str}"
             input = input.replace(chunk, "")
 
-        return f"Results: {results}, Input: {input}"
+        return results
 
     # enddef
 
