@@ -123,15 +123,15 @@ class GradeParser:
             parts.append(x.strip())
         # endfor
 
-        previous_was_dropped: bool = False
         cleaned_sentence_parts: list[str] = []
 
         # Loop through each part/chunk and look for dropped subjects
         for part in parts:
+            # Checks if part stars with any dropped keyword (case-insensitive)
             is_dropped: bool = False
             for word in SYNONYMS["dropped"]:
                 if part.lower().startswith(word):
-                    # Remove the dropped/quit/failed word from the chunk
+                    # Remove the dropped/quit/failed word from the chunks
                     subjects: str = part[len(word):].strip()
                     # Split subjects by 'and'
                     subjects_split: list[str] = re.split(r'and|,', subjects)
@@ -152,22 +152,6 @@ class GradeParser:
                 cleaned_sentence_parts.append(part)
             #endif
         # endfor
-
-        # Remove any chunk only if it contains dropped subjects
-        final_cleaned_parts: list[str] = []
-
-        for chunk in cleaned_sentence_parts:
-            keep: bool = True
-            for subject in dropped:
-                if chunk.lower().strip() == subject.lower().strip():
-                    keep = False
-                    break
-                #endif
-            #endfor
-            if keep:
-                final_cleaned_parts.append(chunk)
-            #endif
-        #endfor
 
         # Join all non-dropped chunks back together
         cleaned_sentence: str = ", ".join(cleaned_sentence_parts)
