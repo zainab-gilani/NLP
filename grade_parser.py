@@ -128,9 +128,9 @@ class GradeParser:
 
         # Loop through each part/chunk and look for dropped subjects
         for part in parts:
-            found: bool = False
+            is_dropped: bool = False
             for word in SYNONYMS["dropped"]:
-                if part.startswith(word):
+                if part.lower().startswith(word):
                     # Remove the dropped/quit/failed word from the chunk
                     subjects: str = part[len(word):].strip()
                     # Split subjects by 'and'
@@ -143,32 +143,14 @@ class GradeParser:
                             dropped.append(subject)
                         # endif
                     # endfor
-                    found = True
-                    previous_was_dropped = True
+                    is_dropped = True
                     break
                 # endif
             # endfor
 
-            if not found:
-                # Not a dropped/quit/failed phrase
-                is_subject: bool = True
-                for word in SYNONYMS["dropped"]:
-                    if part.startswith(word):
-                        is_subject: bool = False
-                        break
-                    # endif
-                # endfor
-
-                # If previous chunk was a dropped one, and this chunk is a subject, add to dropped
-                if previous_was_dropped and is_subject and part not in dropped and is_subject_word(part):
-                    dropped.append(part)
-                else:
-                    # Otherwise, keep this chunk in the cleaned sentence
-                    cleaned_sentence_parts.append(part)
-                # endif
-
-                previous_was_dropped = False
-            # endif
+            if not is_dropped:
+                cleaned_sentence_parts.append(part)
+            #endif
         # endfor
 
         # Remove any chunk only if it contains dropped subjects
@@ -177,7 +159,7 @@ class GradeParser:
         for chunk in cleaned_sentence_parts:
             keep: bool = True
             for subject in dropped:
-                if chunk.strip() == subject or chunk.strip().startswith(subject):
+                if chunk.lower().strip() == subject.lower().strip():
                     keep = False
                     break
                 #endif
