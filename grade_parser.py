@@ -108,8 +108,8 @@ class GradeParser:
             else:
                 return False
             # endif
-        # enddef
 
+        # enddef
 
         cleaned: str = self.clean_input(input)
         dropped: list[str] = []
@@ -120,15 +120,16 @@ class GradeParser:
         # Clean up each chunk for further processing
         parts: list[str] = []
         for x in cleaned:
-            parts.append(x.strip())
+            p = x.strip()
+            if p:
+                parts.append(p)
+            # endif
         # endfor
 
         cleaned_sentence_parts: list[str] = []
 
         # Loop through each part/chunk and look for dropped subjects
         for part in parts:
-            # Checks if part stars with any dropped keyword (case-insensitive)
-            is_dropped: bool = False
             for word in SYNONYMS["dropped"]:
                 if part.lower().startswith(word):
                     # Remove the dropped/quit/failed word from the chunks
@@ -136,22 +137,38 @@ class GradeParser:
                     # Split subjects by 'and'
                     subjects_split: list[str] = re.split(r'and|,', subjects)
 
-
                     for s in subjects_split:
                         subject: str = s.strip()
                         if subject and subject not in dropped and is_subject_word(subject):
                             dropped.append(subject)
                         # endif
                     # endfor
+                    break
+                # endif
+            # endfor
+        # endfor
+
+        for part in parts:
+            # For each dropped subject, check if the chunk matches
+            is_dropped: bool = False
+            for subject in dropped:
+                if part.strip().lower() == subject:
                     is_dropped = True
                     break
                 # endif
             # endfor
 
-            if not is_dropped:
+            # Skip if chunk starts with any dropped synonym
+            for word in SYNONYMS["dropped"]:
+                if part.lower().startswith(word):
+                    is_dropped = True
+                    break
+                # endif
+            # endfor
+
+            if not is_dropped and part != "":
                 cleaned_sentence_parts.append(part)
-            #endif
-        # endfor
+            # endif
 
         # Join all non-dropped chunks back together
         cleaned_sentence: str = ", ".join(cleaned_sentence_parts)
