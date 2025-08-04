@@ -12,6 +12,17 @@ SYNONYMS = {
         "didn't carry forward", "did not carry forward"
     ],
 
+    # All the ways to say someone is interested in taking a subject
+    "interest": [
+        "interested in", "want to apply for", "want to apply to", "applying for", "applying to",
+        "looking into", "looking at", "hoping to study", "hoping for", "considering", "planning to study",
+        "thinking about", "thinking of", "wish to study", "aiming for", "want to pursue", "intend to study",
+        "intent to study", "wish to apply for", "wish to apply to", "hope to do", "hoping for", "curious about",
+        "planning on", "searching for", "looking for", "looking forward to", "would like to study",
+        "studying", "study", "i want to study", "i hope to study", "i'm interested in", "keen on",
+        "apply for", "apply to", "would love to study", "prefer to study", "desire to study"
+    ],
+
     # Subject names and different ways these can be spelt
     "subjects": {
         "mathematics": [
