@@ -52,6 +52,7 @@
 # * Unit tests
 
 import re
+from itertools import count
 
 from synonyms import SYNONYMS
 
@@ -111,6 +112,8 @@ class GradeParser:
 
         # enddef
 
+        dropped_phrases: list[str] = SYNONYMS["dropped"]
+
         cleaned: str = self.clean_input(input)
         dropped: list[str] = []
 
@@ -130,7 +133,7 @@ class GradeParser:
 
         # Loop through each part/chunk and look for dropped subjects
         for part in parts:
-            for word in SYNONYMS["dropped"]:
+            for word in dropped_phrases:
                 if part.lower().startswith(word):
                     # Remove the dropped/quit/failed word from the chunks
                     subjects: str = part[len(word):].strip()
@@ -159,7 +162,7 @@ class GradeParser:
             # endfor
 
             # Skip if chunk starts with any dropped synonym
-            for word in SYNONYMS["dropped"]:
+            for word in dropped_phrases:
                 if part.lower().startswith(word):
                     is_dropped = True
                     break
@@ -326,8 +329,10 @@ class GradeParser:
         """
         subject: str = subject.lower().strip()
 
+        subject_phrases: list[str] = SYNONYMS["subjects"]
+
         # Loop through all main subjects and their synonyms
-        for main_subject, synonyms in SYNONYMS["subjects"].items():
+        for main_subject, synonyms in subject_phrases.items():
             if subject == main_subject:
                 return main_subject
             # endif
@@ -341,8 +346,58 @@ class GradeParser:
 
     # enddef
 
-    def find_course_interest(self, input):  # Looks for course of interest
-        pass
+    def find_course_interest(self, input: str) -> list[str]:
+        """
+        Finds and returns all course interests mentioned in the input, using synonyms from the course list.
+
+        :param input: str. User input, e.g. "I'm interested in medicine" or "Looking for economics"
+        :return: list[str]. List of canonical course names matched in the input (could be more than one).
+        """
+
+        interests_phrases: list[str] = SYNONYMS["interest"]
+        courses_dict: dict[str, list[str]] = SYNONYMS["courses"]
+
+        found_courses: list[str] = []
+
+        cleaned: str = self.clean_input(input)
+        # Split by commas for easier parsing
+        cleaned: list[str] = cleaned.split(",")
+
+        # Loop through each interest phrase
+        for phrase in interests_phrases:
+            # Check if the phrase is in the input
+            if phrase in cleaned:
+                # If found, look for each course
+                for course, synonyms in courses_dict.items():
+                    # Check if course name or any course name synonyms are in the input
+                    if course in cleaned and course not in found_courses:
+                        found_courses.append(course)
+                    #endif
+                    for synonym in synonyms:
+                        if synonym in cleaned and course not in found_courses:
+                            found_courses.append(course)
+                        #endif
+                    #endfor
+                #endfor
+            #endif
+        #endfor
+
+        # If nothing is found, do another search just for course names and synonyms
+        if not found_courses:
+            for course, synonyms in courses_dict.items():
+                if course in cleaned and course not in found_courses:
+                    found_courses.append(course)
+                #endif
+
+                for synonym in synonyms:
+                    if synonym in cleaned and course not in found_courses:
+                        found_courses.append(course)
+                    #endif
+                #endfor
+            #endfor
+        #endif
+
+        return found_courses
 
     # enddef
 
