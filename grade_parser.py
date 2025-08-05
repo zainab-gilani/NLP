@@ -54,6 +54,7 @@
 import re
 from itertools import count
 
+from mini_tests import dropped_phrases
 from synonyms import SYNONYMS
 
 class GradeParser:
@@ -98,65 +99,44 @@ class GradeParser:
         """
 
         dropped_phrases: list[str] = SYNONYMS["dropped"]
+        sentence = self.clean_input(input).lower()
 
-        sentence: str = self.clean_input(input).lower()
-
-
-
+        # Removes 'dropped/quit/failed/...' subject phrases using regex
         for phrase in dropped_phrases:
             pattern = rf"(?:\bi\s+)?{phrase}\s+([a-z\s]+(?:\sand\s[a-z\s]+)*)"
-            sentence = re.sub(pattern, '', sentence)
+            sentence = re.sub(pattern, "", sentence)
         #endfor
 
+        # Tidies up leftover punctuation/whitespace
+        sentence = re.sub(r',\s*,+', ',', sentence)  # Remove duplicate commas
+        sentence = re.sub(r'^\s*,|,\s*$', '', sentence)  # Remove leading/trailing commas
+        sentence = re.sub(r'\s+,', ',', sentence)  # Remove spaces before commas
+        sentence = re.sub(r',\s+', ', ', sentence)  # Space after commas
+        sentence = re.sub(r'\s+', ' ', sentence)  # Collapse extra spaces
 
-        sentence = re.sub(r',\s*,+', ',', sentence)
-        sentence = re.sub(r'^\s*,\s*', '', sentence)
-        sentence = re.sub(r',\s*$', '', sentence)
-        sentence = re.sub(r'\s+,', ',', sentence)
-        sentence = re.sub(r',\s+', ', ', sentence)
-        sentence = re.sub(r'\s+', ' ', sentence)
-        sentence = re.sub(r',\s*and\s*$', '', sentence)
-        sentence = re.sub(r'\s*and\s*$', '', sentence)
-        sentence = re.sub(r'^\s*and\s*', '', sentence)
-        sentence = re.sub(r',\s*and\s*,', ',', sentence)
-        sentence = re.sub(r',\s*and\s+', ', ', sentence)
-        sentence = sentence.strip()
+        # Removes any 'and' at the start/end or floating in between commas
+        sentence = re.sub(r'(^|\s|,)+and(\s|,|$)+', ' ', sentence)
+        sentence = sentence.strip(', ').strip()
 
-        if sentence == ",":
-            sentence = ""
-        #endif
+        # After regex, splits by commas and filter out any chunk that's just a stray subject
 
-        # Remove leftover dropped subjects if they are a chunk at the start
-        # This loop gets rid of "drama" if it’s alone at start after previous removals
-        chunks: list[str] = sentence.split(",")
-        keep_chunks: list[str] = []
-        for chunk in chunks:
-            trimmed = chunk.strip()
-            # Remove if this chunk is just a dropped subject word (like "drama" or "music")
-            # OR it's literally "and drama", "and music", etc (bc sometimes that's left)
-            is_only_subject = False
-            for phrase in dropped_phrases:
-                # Check for cases like "and drama", "drama", etc
-                # Only remove if chunk is a single word from the dropped context
-                if trimmed in ["and", ""]:
-                    is_only_subject = True
-                # If chunk is just a word with no 'got', 'in', 'but', etc, and it's not a grade line
-                elif (trimmed.isalpha() or trimmed.startswith("and ")) and not (
-                    "got" in trimmed or "in " in trimmed or "but" in trimmed or "a " in trimmed or "b " in trimmed or "c " in trimmed
-                ):
-                    is_only_subject = True
-            #endfor
-            if not is_only_subject:
-                keep_chunks.append(trimmed)
+        keep: list[str] = []
+
+        for part in sentence.split(","):
+            trimmed = part.strip()
+
+            # Only keeps chunk if it actually looks like a grade/real info
+            # (e.g. "got a in maths", "b in chem", etc)
+            # Removes single words like "music" or "drama" at start
+            if trimmed and not (trimmed.isalpha() and len(trimmed.split()) == 1):
+                keep.append(trimmed)
+            #endif
         #endfor
 
-        sentence = ", ".join(keep_chunks).strip()
-        if sentence == ",":
-            sentence = ""
+        # Joins back together
+        result = ", ".join(keep).strip(", ")
 
-
-        return sentence
-
+        return result
     # enddef
 
     def find_grade_subject_pairs(self, input: str) -> dict[str, str]:
@@ -173,9 +153,13 @@ class GradeParser:
 
         # Patterns for different input formats
         patterns: list[tuple[str, str]] = [
-            (r"\b(A\*|A|B|C|D|E|U)\b\s+in\s+([a-zA-Z\s]+?)(?:,|$)", "grade_in_subject"),
+            # 1. A* in comp sci, B in math, C in further math, etc.
+            (r"(?:\b\w+\s+)?(A\*|A|B|C|D|E|U)\s+in\s+([a-zA-Z\s]+?)(?:,|$)", "grade_in_subject"),
+            # 2. maths: A, english literature: B, etc.
             (r"([a-zA-Z\s]+?)\s*[:\-]\s*(A\*|A|B|C|D|E|U)", "subject_colon_grade"),
+            # 3. maths B, comp sci A*, further math C, etc.
             (r"([a-zA-Z\s]+?)\s+(A\*|A|B|C|D|E|U)(?:,|$)", "subject_grade"),
+            # 4. my grade in geography is D, in history is C
             (r"(?:my grade in|in)\s+([a-zA-Z\s]+?)\s+is\s+(A\*|A|B|C|D|E|U)", "in_subject_is_grade"),
         ]
 
