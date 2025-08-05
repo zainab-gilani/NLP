@@ -353,53 +353,83 @@ class GradeParser:
         :param input: str. User input, e.g. "I'm interested in medicine" or "Looking for economics"
         :return: list[str]. List of canonical course names matched in the input (could be more than one).
         """
+        # Gets all possible interest phrases (like "interested in", "looking for", etc.)
+        interest_phrases: list[str] = SYNONYMS["interest"]
 
-        interests_phrases: list[str] = SYNONYMS["interest"]
+        # Gets the dictionary of courses and their synonyms
         courses_dict: dict[str, list[str]] = SYNONYMS["courses"]
 
+        # This will store the main course names found in the input
         found_courses: list[str] = []
 
+        # Cleans the user input (removes "and", lowercase, strip spaces)
         cleaned: str = self.clean_input(input)
-        # Split by commas for easier parsing
-        cleaned: list[str] = cleaned.split(",")
 
-        # Loop through each interest phrase
-        for phrase in interests_phrases:
-            # Check if the phrase is in the input
-            if phrase in cleaned:
-                # If found, look for each course
-                for course, synonyms in courses_dict.items():
-                    # Check if course name or any course name synonyms are in the input
-                    if course in cleaned and course not in found_courses:
-                        found_courses.append(course)
-                    #endif
-                    for synonym in synonyms:
-                        if synonym in cleaned and course not in found_courses:
-                            found_courses.append(course)
-                        #endif
-                    #endfor
-                #endfor
+        # Lowercase version of the cleaned input for easier searching
+        cleaned_joined: str = cleaned.lower()
+
+        # Builds search list with all (main, synonym) pairs
+        course_search_list: list[tuple[str, str]] = []
+        for course, synonyms in courses_dict.items():
+            # Adds the main course itself (e.g., "medicine")
+            course_search_list.append((course, course))
+            # Adds all synonyms for this course (e.g., "med", "mbbs", etc.)
+            for synonym in synonyms:
+                course_search_list.append((course, synonym))
+            #endfor
+        #endfor
+
+        # Sorts the search list so that longer synonyms come first
+        # (Prevents "english" matching before "english literature")
+        for i in range(len(course_search_list)):
+            for j in range(i + 1, len(course_search_list)):
+                # Compares the length of the search names
+                if len(course_search_list[j][1]) > len(course_search_list[i][1]):
+                    # Swap if needed so longer phrases come first
+                    temp = course_search_list[i]
+                    course_search_list[i] = course_search_list[j]
+                    course_search_list[j] = temp
+                #endif
+            #endfor
+        #endfor
+
+        # Checks if any interest phrase is present in the input (like "hoping to study", "interested in", etc.)
+        found_interest_phrase: bool = False
+        for phrase in interest_phrases:
+            if phrase in cleaned_joined:
+                found_interest_phrase = True
+                break
             #endif
         #endfor
 
-        # If nothing is found, do another search just for course names and synonyms
-        if not found_courses:
-            for course, synonyms in courses_dict.items():
-                if course in cleaned and course not in found_courses:
-                    found_courses.append(course)
-                #endif
-
-                for synonym in synonyms:
-                    if synonym in cleaned and course not in found_courses:
+        # If interest phrase is found, search for course matches using our big list
+        if found_interest_phrase:
+            for course, search_name in course_search_list:
+                # If the synonym is in the input, and the course hasn't already been added
+                if search_name in cleaned_joined:
+                    # add the course ONLY IF NOT ALREADY IN THE LIST
+                    if course not in found_courses:
                         found_courses.append(course)
                     #endif
-                #endfor
+                #endif
             #endfor
         #endif
 
-        return found_courses
+        # If nothing matched, just try finding courses even if there was no clear interest phrase
+        # (Catches cases like "medicine" alone at the end of input)
+        if not found_courses:
+            for course, search_name in course_search_list:
+                if search_name in cleaned_joined:
+                    if course not in found_courses:
+                        found_courses.append(course)
+                    #endif
+                #endif
+            #endfor
+        #endif
 
-    # enddef
+        # Return the list of found main course names
+        return found_courses
+    #enddef
 
     def parse(self, input):
         pass
@@ -410,6 +440,6 @@ class GradeParser:
 
 parser = GradeParser()
 
-print(parser.find_grade_subject_pairs("I got A in maths, B in physics and dropped chemistry, and im interested in med"))
+print(parser.find_course_interest("Interested in english literature"))
 # print(parser.find_multi_grades("You listen to me now, my grades are AAB in maths, CS, physics"))
 
