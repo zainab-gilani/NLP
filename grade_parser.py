@@ -1,8 +1,6 @@
 import re
-from itertools import count
-
-from mini_tests import dropped_phrases
 from synonyms import SYNONYMS
+
 
 class GradeParser:
     GRADE_PATTERN: str = r'\bA\*|A|B|C|D|E|U\b'  # Finds grades like A*, B, U, etc
@@ -12,8 +10,10 @@ class GradeParser:
         Cleans and standardizes the user input by converting to lowercase, removing unnecessary
         words such as 'and' or 'commas' and stripping extra whitespace.
 
-        :param input: str. Raw user input describing subjects, grades, and additional info.
-        :return: str. Cleaned and normalized input string.
+        :param input: str
+            Raw user input describing subjects, grades, and additional info.
+        :return: str
+            Cleaned and normalized input string.
         """
         # Replace 'and' with ',' for easier splitting, lowercase the whole string, strip extra spaces
         input = input.replace("and", ",").lower().strip()
@@ -41,8 +41,10 @@ class GradeParser:
         based on recognized phrases like 'dropped', 'quit', 'failed', etc.
         Returns the cleaned input with dropped subjects removed.
 
-        :param input: str. User input describing subjects, grades, and any dropped/abandoned subjects.
-        :return: str. Cleaned input with dropped subjects removed.
+        :param input: str
+            User input describing subjects, grades, and any dropped/abandoned subjects.
+        :return: str
+            Cleaned input with dropped subjects removed.
         """
 
         dropped_phrases: list[str] = SYNONYMS["dropped"]
@@ -52,7 +54,7 @@ class GradeParser:
         for phrase in dropped_phrases:
             pattern = rf"(?:\bi\s+)?{phrase}\s+([a-z\s]+(?:\sand\s[a-z\s]+)*)"
             sentence = re.sub(pattern, "", sentence)
-        #endfor
+        # endfor
 
         # Tidies up leftover punctuation/whitespace
         sentence = re.sub(r',\s*,+', ',', sentence)  # Remove duplicate commas
@@ -77,21 +79,24 @@ class GradeParser:
             # Removes single words like "music" or "drama" at start
             if trimmed and not (trimmed.isalpha() and len(trimmed.split()) == 1):
                 keep.append(trimmed)
-            #endif
-        #endfor
+            # endif
+        # endfor
 
         # Joins back together
         result = ", ".join(keep).strip(", ")
 
         return result
+
     # enddef
 
     def find_grade_subject_pairs(self, input: str) -> dict[str, str]:
         """
         Extracts individual subject-grade pairs from the remaining input,
         using several patterns to catch all possible combos.
-        :param input: str. The cleaned input sentence containing grade/subject info.
-        :return: dict. Returns a dict of {normalized_subject: grade}.
+        :param input: str
+            The cleaned input sentence containing grade/subject info.
+        :return: dict
+            Returns a dict of {normalized_subject: grade}.
         """
 
         results: dict[str, str] = {}
@@ -100,28 +105,24 @@ class GradeParser:
 
         # Patterns for different input formats
         patterns: list[tuple[str, str]] = [
-            # 1. A* in comp sci, B in math, C in further math, etc.
-            (r"(?:\b\w+\s+)?(A\*|A|B|C|D|E|U)\s+in\s+([a-zA-Z\s]+?)(?:,|$)", "grade_in_subject"),
-            # 2. maths: A, english literature: B, etc.
+            (r'(?:^|[,\s])(?:got\s+)?(A\*|A|B|C|D|E|U)\s+in\s+([a-zA-Z\s]+?)(?:,|$)', "grade_in_subject"),
             (r"([a-zA-Z\s]+?)\s*[:\-]\s*(A\*|A|B|C|D|E|U)", "subject_colon_grade"),
-            # 3. maths B, comp sci A*, further math C, etc.
             (r"([a-zA-Z\s]+?)\s+(A\*|A|B|C|D|E|U)(?:,|$)", "subject_grade"),
-            # 4. my grade in geography is D, in history is C
             (r"(?:my grade in|in)\s+([a-zA-Z\s]+?)\s+is\s+(A\*|A|B|C|D|E|U)", "in_subject_is_grade"),
         ]
 
-        print("CLEANED SENTENCE:", cleaned_sentence)
-        for pattern, _ in patterns:
-            print("Pattern:", pattern, re.IGNORECASE)
-            print("Matches:", re.findall(pattern, cleaned_sentence, re.IGNORECASE))
-        #endfor
+        # print("CLEANED SENTENCE:", cleaned_sentence)
+        # for pattern, _ in patterns:
+        #     print("Pattern:", pattern, re.IGNORECASE)
+        #     print("Matches:", re.findall(pattern, cleaned_sentence, re.IGNORECASE))
+        # #endfor
 
         # Try all patterns to catch different formats
         for pattern, mode in patterns:
             matches: list[tuple[str, str]] = re.findall(pattern, cleaned_sentence, re.IGNORECASE)
 
             # Debug: show matches for each pattern
-            print(f"Pattern: {pattern}, Matches: {matches}")
+            # print(f"Pattern: {pattern}, Matches: {matches}")
 
             for match in matches:
                 if mode == "grade_in_subject":
@@ -129,7 +130,7 @@ class GradeParser:
                     if len(match) == 3:
                         grade = match[1]
                         subject = match[2]
-                    else: # Subject first, then grade
+                    else:  # Subject first, then grade
                         grade = match[0]
                         subject = match[1]
                 else:
@@ -155,14 +156,16 @@ class GradeParser:
 
     # enddef
 
-    def find_multi_grades(self, input: str) -> str:
+    def find_multi_grades(self, input: str) -> dict[str, str]:
         """
         Extracts multiple grade/subject pairs from sentences with grouped grades, such as 'ABB in maths,
         physics and biology'. Pairs each grade with the corresponding subject in order and returns a dictionary
         mapping normalized subject names to grades.
 
-        :param input: str. The cleaned input sentence containing grade/subject info.
-        :return: dict. Keys are normalized subject names (str), values are grades (str).
+        :param input: str
+            The cleaned input sentence containing grade/subject info.
+        :return: dict
+            Keys are normalized subject names (str), values are grades (str).
                      Example: {'mathematics': 'A', 'physics': 'B', 'biology': 'B'}
                      Returns an empty dict if no multi-grade pattern is found.
         """
@@ -235,8 +238,10 @@ class GradeParser:
         """
         Converts a subject synonym to its main) subject name.
 
-        :param subject: str. The subject name or synonym, e.g. "maths", "comp sci", "bio".
-        :return: str. The standardized main subject name (e.g. "mathematics", "computer science", "biology").
+        :param subject: str
+            The subject name or synonym, e.g. "maths", "comp sci", "bio".
+        :return: str
+            The standardized main subject name (e.g. "mathematics", "computer science", "biology").
         """
         subject: str = subject.lower().strip()
 
@@ -261,7 +266,8 @@ class GradeParser:
         """
         Finds and returns all course interests mentioned in the input, using synonyms from the course list.
 
-        :param input: str. User input, e.g. "I'm interested in medicine" or "Looking for economics"
+        :param input: str
+            User input, e.g. "I'm interested in medicine" or "Looking for economics"
         :return: list[str]. List of canonical course names matched in the input (could be more than one).
         """
         # Gets all possible interest phrases (like "interested in", "looking for", etc.)
@@ -287,8 +293,8 @@ class GradeParser:
             # Adds all synonyms for this course (e.g., "med", "mbbs", etc.)
             for synonym in synonyms:
                 course_search_list.append((course, synonym))
-            #endfor
-        #endfor
+            # endfor
+        # endfor
 
         # Sorts the search list so that longer synonyms come first
         # (Prevents "english" matching before "english literature")
@@ -300,9 +306,9 @@ class GradeParser:
                     temp = course_search_list[i]
                     course_search_list[i] = course_search_list[j]
                     course_search_list[j] = temp
-                #endif
-            #endfor
-        #endfor
+                # endif
+            # endfor
+        # endfor
 
         # Checks if any interest phrase is present in the input (like "hoping to study", "interested in", etc.)
         found_interest_phrase: bool = False
@@ -310,21 +316,25 @@ class GradeParser:
             if phrase in cleaned_joined:
                 found_interest_phrase = True
                 break
-            #endif
-        #endfor
+            # endif
+        # endfor
 
         # If interest phrase is found, search for course matches using our big list
         if found_interest_phrase:
-            for course, search_name in course_search_list:
-                # If the synonym is in the input, and the course hasn't already been added
-                if search_name in cleaned_joined:
-                    # add the course ONLY IF NOT ALREADY IN THE LIST
-                    if course not in found_courses:
-                        found_courses.append(course)
-                    #endif
-                #endif
-            #endfor
-        #endif
+            for course, synonyms in courses_dict.items():
+                # Always include the main course name as its own synonym
+                all_names = [course] + synonyms
+                for name in all_names:
+                    pattern = r'\b' + re.escape(name) + r'\b'
+                    if re.search(pattern, cleaned_joined):
+                        if course not in found_courses:
+                            found_courses.append(course)
+                        # endif
+                        break
+                    # endif
+                # endfor
+            # endfor
+        # endif
 
         # If nothing matched, just try finding courses even if there was no clear interest phrase
         # (Catches cases like "medicine" alone at the end of input)
@@ -333,14 +343,29 @@ class GradeParser:
                 if search_name in cleaned_joined:
                     if course not in found_courses:
                         found_courses.append(course)
-                    #endif
-                #endif
-            #endfor
-        #endif
+                    # endif
+                # endif
+            # endfor
+        # endif
+
+        clean_courses: list[str] = []
+        for i in range(len(found_courses)):
+            current = found_courses[i]
+            found_overlap: bool = False
+            for j in range(len(found_courses)):
+                if i != j and current in found_courses[j]:
+                    found_overlap = True
+                    break
+                # endif
+            # endfor
+            if not found_overlap:
+                clean_courses.append(current)
+            # endif
 
         # Return the list of found main course names
-        return found_courses
-    #enddef
+        return clean_courses
+
+    # enddef
 
     def find_course_interest(self, input: str) -> list[str]:
         """
@@ -487,6 +512,5 @@ class GradeParser:
 
 parser = GradeParser()
 
-print(parser.find_course_interest("Interested in english literature"))
-# print(parser.find_multi_grades("You listen to me now, my grades are AAB in maths, CS, physics"))
-
+print(parser.parse(
+    "I got A in maths, B in physics and dropped chemistry, and I'm interested in medicine and english literature."))
