@@ -4,7 +4,6 @@ from grade_parser import GradeParser
 class TestGradeParser(unittest.TestCase):
     def setUp(self):
         self.parser = GradeParser()
-
     #enddef
 
     # Tests for clean_input function

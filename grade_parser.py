@@ -15,6 +15,7 @@ class GradeParser:
         :return: str
             Cleaned and normalized input string.
         """
+
         # Replace 'and' with ',' for easier splitting, lowercase the whole string, strip extra spaces
         input: str = input.replace("and", ",").lower().strip()
         parts: list[str] = input.split(",")
@@ -134,6 +135,7 @@ class GradeParser:
                     else:  # Subject first, then grade
                         grade = match[0]
                         subject = match[1]
+                    #endif
                 else:
                     subject = match[0]
                     grade = match[1]
@@ -170,6 +172,7 @@ class GradeParser:
                      Example: {'mathematics': 'A', 'physics': 'B', 'biology': 'B'}
                      Returns an empty dict if no multi-grade pattern is found.
         """
+
         results: dict[str, str] = {}
 
         # Separates the chunk of grades into singular elements in a list
@@ -231,6 +234,7 @@ class GradeParser:
             # so other functions don't have to parse it again
             chunk: str = f"{grades_str} in {subjects_str}"
             input: str = input.replace(chunk, "")
+        #endfor
 
         return results
 
@@ -245,6 +249,7 @@ class GradeParser:
         :return: str
             The standardized main subject name (e.g. "mathematics", "computer science", "biology").
         """
+
         subject: str = subject.lower().strip()
 
         subject_phrases: list[str] = SYNONYMS["subjects"]
@@ -274,6 +279,7 @@ class GradeParser:
             User input, e.g. "I'm interested in medicine" or "Looking for economics"
         :return: list[str]. List of canonical course names matched in the input (could be more than one).
         """
+
         # Gets all possible interest phrases (like "interested in", "looking for", etc.)
         interest_phrases: list[str] = SYNONYMS["interest"]
 
@@ -316,6 +322,7 @@ class GradeParser:
 
         # Checks if any interest phrase is present in the input (like "hoping to study", "interested in", etc.)
         found_interest_phrase: bool = False
+
         for phrase in interest_phrases:
             if phrase in cleaned_joined:
                 found_interest_phrase = True
@@ -366,6 +373,7 @@ class GradeParser:
             if not found_overlap:
                 clean_courses.append(current)
             #endif
+        #endfor
 
         # Return the list of found main course names
         return clean_courses
@@ -382,6 +390,7 @@ class GradeParser:
         :return: list[str]
             List of main course names found in the input (duplicates/overlaps removed)
         """
+
         # List of phrases showing a user's interest in a subject (e.g., "interested in", "looking for")
         interest_phrases: list[str] = SYNONYMS["interest"]
 
@@ -480,6 +489,7 @@ class GradeParser:
                 "interests": [list of main course names the user is interested in]
             }
         """
+
         # Removes any dropped/quit subjects from the input
         cleaned: str = self.find_dropped_subjects(input)
 
