@@ -342,8 +342,144 @@ class GradeParser:
         return found_courses
     #enddef
 
-    def parse(self, input):
-        pass
+    def find_course_interest(self, input: str) -> list[str]:
+        """
+        Extracts all course interests mentioned by the user in their input,
+        by matching against a predefined set of interest phrases and course synonyms.
+
+        :param input: str
+            Raw user input (e.g., "I'm interested in medicine and law")
+        :return: list[str]
+            List of main course names found in the input (duplicates/overlaps removed)
+        """
+        import re
+
+        # List of phrases showing a user's interest in a subject (e.g., "interested in", "looking for")
+        interest_phrases: list[str] = SYNONYMS["interest"]
+
+        # Dictionary of all courses and their list of synonyms (e.g., {"medicine": ["med", "mbbs"]})
+        courses_dict: dict[str, list[str]] = SYNONYMS["courses"]
+
+        # Will collect the main course names found in the user input
+        found_courses: list[str] = []
+
+        # Cleans up the input: makes lowercase, removes extra words like "and"
+        cleaned: str = self.clean_input(input)
+
+        # Lowercase, stripped version for searching
+        cleaned_joined: str = cleaned.lower()
+
+        # Checks if any interest phrase is present (e.g., "interested in", "hoping to study")
+        found_interest_phrase: bool = False
+        for phrase in interest_phrases:
+            if phrase in cleaned_joined:
+                found_interest_phrase = True
+                break
+            # endif
+        # endfor
+
+        # If an interest phrase is found, looks for matching courses using word boundaries
+        if found_interest_phrase:
+            for course, synonyms in courses_dict.items():
+                # Makes a list with the course name and all its synonyms
+                all_names: list[str] = [course] + synonyms
+                for name in all_names:
+                    # Builds a regex pattern to match the name as a whole word
+                    pattern: str = r'\b' + re.escape(name) + r'\b'
+                    if re.search(pattern, cleaned_joined):
+                        # Only adds if it hasn't already been found
+                        if course not in found_courses:
+                            found_courses.append(course)
+                        # endif
+                        break  # No need to check other synonyms for this course
+                    # endif
+                # endfor
+            # endfor
+        # endif
+
+        # If no courses and no interest phrase matched, checks the input for any course names anyway
+        if not found_courses and not found_interest_phrase:
+            for course, synonyms in courses_dict.items():
+                all_names: list[str] = [course] + synonyms
+                for name in all_names:
+                    pattern: str = r'\b' + re.escape(name) + r'\b'
+                    if re.search(pattern, cleaned_joined):
+                        if course not in found_courses:
+                            found_courses.append(course)
+                        # endif
+                        break
+                    # endif
+                # endfor
+            # endfor
+        # endif
+
+        # Removes overlapping course names (e.g., "english" inside "english literature"), keep the longest only
+        clean_courses: list[str] = []
+        for i in range(len(found_courses)):
+            current: str = found_courses[i]
+            found_overlap: bool = False
+            for j in range(len(found_courses)):
+                # If current course name is fully inside another, skip it (unless it's the same)
+                if i != j and current in found_courses[j]:
+                    found_overlap = True
+                    break
+                # endif
+            # endfor
+            if not found_overlap:
+                clean_courses.append(current)
+            # endif
+        # endfor
+
+        # Returns the final list of main course names the user is interested in
+        return clean_courses
+
+    # enddef
+
+    def parse(self, input: str) -> dict:
+        """
+        Parses the user's raw input and returns a summary of grades and course interests.
+        This function uses all helper functions to process, extract, and organize the user's input
+        for further use (like searching a course/uni database).
+
+        :param input: str
+            User input containing grades, dropped subjects, and course interests
+        :return: dict
+            {
+                "grades": {normalized_subject: grade, ...},
+                "interests": [list of main course names the user is interested in]
+            }
+        """
+        # Removes any dropped/quit subjects from the input
+        cleaned: str = self.find_dropped_subjects(input)
+
+        # Extracts grouped grades (e.g., "AAB in maths, chem, bio")
+        multi_grades: dict[str, str] = self.find_multi_grades(cleaned)
+
+        # Extracts normal grade-subject pairs (e.g., "A in maths, B in chemistry")
+        grades: dict[str, str] = self.find_grade_subject_pairs(cleaned)
+
+        # Combines the two, letting multi_grades overwrite regular grades if they overlap
+        all_grades: dict[str, str] = grades.copy()
+        all_grades.update(multi_grades)
+
+        # Gets all the course interests from the original input
+        interests: list[str] = self.find_course_interest(input)
+
+        # Removes any course from interests if it already appears in grades (e.g., "A in medicine")
+        clean_interests: list[str] = []
+        for i in interests:
+            if i not in all_grades:
+                clean_interests.append(i)
+            # endif
+        # endfor
+
+        # Builds and return the final result as a dictionary
+        result: dict = {
+            "grades": all_grades,
+            "interests": clean_interests
+        }
+
+        return result
     # enddef
 
 
