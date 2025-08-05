@@ -102,7 +102,7 @@ class GradeParser:
             :param word: Represents a potential subject name or phrase, e.g. 'further maths'
             :return: bool. True if subject has three words or less, otherwise False
             """
-            words: list[str] = word.strip()
+            words: list[str] = word.strip().split()
             word_count: int = len(words)
             if word_count <= 3:
                 return True
@@ -113,8 +113,11 @@ class GradeParser:
         # enddef
 
         dropped_phrases: list[str] = SYNONYMS["dropped"]
+        none_phrases: list[str] = SYNONYMS["none"]
 
         cleaned: str = self.clean_input(input)
+        original_sentence: str = cleaned
+
         dropped: list[str] = []
 
         # Split by commas for easier parsing
@@ -133,6 +136,7 @@ class GradeParser:
 
         # Loop through each part/chunk and look for dropped subjects
         for part in parts:
+            found: bool = False
             for word in dropped_phrases:
                 if part.lower().startswith(word):
                     # Remove the dropped/quit/failed word from the chunks
@@ -141,37 +145,18 @@ class GradeParser:
                     subjects_split: list[str] = re.split(r'and|,', subjects)
 
                     for s in subjects_split:
-                        subject: str = s.strip()
-                        if subject and subject not in dropped and is_subject_word(subject):
+                        subject: str = s.strip().lower()
+                        if subject and subject not in none_phrases and is_subject_word(subject):
                             dropped.append(subject)
                         # endif
                     # endfor
+                    found = True
                     break
                 # endif
             # endfor
-        # endfor
-
-        for part in parts:
-            # For each dropped subject, check if the chunk matches
-            is_dropped: bool = False
-            for subject in dropped:
-                if part.strip().lower() == subject:
-                    is_dropped = True
-                    break
-                # endif
-            # endfor
-
-            # Skip if chunk starts with any dropped synonym
-            for word in dropped_phrases:
-                if part.lower().startswith(word):
-                    is_dropped = True
-                    break
-                # endif
-            # endfor
-
-            if not is_dropped and part != "":
+            if not found:
                 cleaned_sentence_parts.append(part)
-            # endif
+        # endfor
 
         # Join all non-dropped chunks back together
         cleaned_sentence: str = ", ".join(cleaned_sentence_parts)
