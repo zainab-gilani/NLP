@@ -23,6 +23,24 @@ SYNONYMS = {
         "apply for", "apply to", "would love to study", "prefer to study", "desire to study"
     ],
 
+    # All the ways to say someone did not drop anything, or none at all
+    "none": [
+        "nothing", "none", "n/a", "nil", "zero", "no subject", "no subjects",
+        "not any", "not a single", "not one", "all", "didn't drop any", "did not drop any",
+        "didn't drop anything", "did not drop anything",
+        "haven't dropped any", "haven't dropped anything",
+        "never dropped any", "never dropped anything",
+        "didn't leave any", "did not leave any", "left none", "left nothing",
+        "nope", "no course", "no courses", "no class", "no classes",
+        "not applicable", "not relevant", "didn't quit any", "did not quit any",
+        "didn't quit anything", "did not quit anything",
+        "haven't quit any", "haven't quit anything",
+        "never quit any", "never quit anything",
+        "didn't fail any", "did not fail any", "didn't fail anything", "did not fail anything",
+        "not dropped", "not left", "not failed", "not quit",
+        "all kept", "kept all", "retained all", "none dropped"
+    ],
+
     # Subject names and different ways these can be spelt
     "subjects": {
         "mathematics": [
@@ -215,9 +233,14 @@ SYNONYMS = {
         ],
 
         "english": [
-            "english", "english literature", "english language", "english studies", "english degree", "literature",
-            "creative writing", "english lit", "english lang", "literary studies", "linguistics",
-            "comparative literature"
+            "english", "english studies", "english degree", "creative writing", "linguistics", "comparative literature"
+        ],
+
+        "english literature": [
+            "english literature", "lit", "english lit", "literature", "literary studies", "eng lit"
+        ],
+        "english language": [
+            "english language", "english lang", "eng lang", "lang", "language", "english studies"
         ],
 
         "architecture": [
