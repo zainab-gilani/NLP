@@ -89,78 +89,73 @@ class GradeParser:
 
     def find_dropped_subjects(self, input: str) -> str:
         """
-        Extracts and returns a list of dropped subjects found in the input, based on recognized
-        dropped/quit/failed phrases.
-        Also returns a cleaned version of the input with dropped information removed.
+        Removes all dropped/quit/failed subjects from the input string,
+        based on recognized phrases like 'dropped', 'quit', 'failed', etc.
+        Returns the cleaned input with dropped subjects removed.
 
         :param input: str. User input describing subjects, grades, and any dropped/abandoned subjects.
         :return: str. Cleaned input with dropped subjects removed.
         """
 
-        def is_subject_word(word: str) -> bool:
-            """
-            :param word: Represents a potential subject name or phrase, e.g. 'further maths'
-            :return: bool. True if subject has three words or less, otherwise False
-            """
-            words: list[str] = word.strip().split()
-            word_count: int = len(words)
-            if word_count <= 3:
-                return True
-            else:
-                return False
-            # endif
-
-        # enddef
-
         dropped_phrases: list[str] = SYNONYMS["dropped"]
-        none_phrases: list[str] = SYNONYMS["none"]
 
-        cleaned: str = self.clean_input(input)
-        original_sentence: str = cleaned
+        sentence: str = self.clean_input(input).lower()
 
-        dropped: list[str] = []
 
-        # Split by commas for easier parsing
-        cleaned: list[str] = cleaned.split(",")
 
-        # Clean up each chunk for further processing
-        parts: list[str] = []
-        for x in cleaned:
-            p = x.strip()
-            if p:
-                parts.append(p)
-            # endif
-        # endfor
+        for phrase in dropped_phrases:
+            pattern = rf"(?:\bi\s+)?{phrase}\s+([a-z\s]+(?:\sand\s[a-z\s]+)*)"
+            sentence = re.sub(pattern, '', sentence)
+        #endfor
 
-        cleaned_sentence_parts: list[str] = []
 
-        # Loop through each part/chunk and look for dropped subjects
-        for part in parts:
-            found: bool = False
-            for word in dropped_phrases:
-                if part.lower().startswith(word):
-                    # Remove the dropped/quit/failed word from the chunks
-                    subjects: str = part[len(word):].strip()
-                    # Split subjects by 'and'
-                    subjects_split: list[str] = re.split(r'and|,', subjects)
+        sentence = re.sub(r',\s*,+', ',', sentence)
+        sentence = re.sub(r'^\s*,\s*', '', sentence)
+        sentence = re.sub(r',\s*$', '', sentence)
+        sentence = re.sub(r'\s+,', ',', sentence)
+        sentence = re.sub(r',\s+', ', ', sentence)
+        sentence = re.sub(r'\s+', ' ', sentence)
+        sentence = re.sub(r',\s*and\s*$', '', sentence)
+        sentence = re.sub(r'\s*and\s*$', '', sentence)
+        sentence = re.sub(r'^\s*and\s*', '', sentence)
+        sentence = re.sub(r',\s*and\s*,', ',', sentence)
+        sentence = re.sub(r',\s*and\s+', ', ', sentence)
+        sentence = sentence.strip()
 
-                    for s in subjects_split:
-                        subject: str = s.strip().lower()
-                        if subject and subject not in none_phrases and is_subject_word(subject):
-                            dropped.append(subject)
-                        # endif
-                    # endfor
-                    found = True
-                    break
-                # endif
-            # endfor
-            if not found:
-                cleaned_sentence_parts.append(part)
-        # endfor
+        if sentence == ",":
+            sentence = ""
+        #endif
 
-        # Join all non-dropped chunks back together
-        cleaned_sentence: str = ", ".join(cleaned_sentence_parts)
-        return cleaned_sentence
+        # Remove leftover dropped subjects if they are a chunk at the start
+        # This loop gets rid of "drama" if it’s alone at start after previous removals
+        chunks: list[str] = sentence.split(",")
+        keep_chunks: list[str] = []
+        for chunk in chunks:
+            trimmed = chunk.strip()
+            # Remove if this chunk is just a dropped subject word (like "drama" or "music")
+            # OR it's literally "and drama", "and music", etc (bc sometimes that's left)
+            is_only_subject = False
+            for phrase in dropped_phrases:
+                # Check for cases like "and drama", "drama", etc
+                # Only remove if chunk is a single word from the dropped context
+                if trimmed in ["and", ""]:
+                    is_only_subject = True
+                # If chunk is just a word with no 'got', 'in', 'but', etc, and it's not a grade line
+                elif (trimmed.isalpha() or trimmed.startswith("and ")) and not (
+                    "got" in trimmed or "in " in trimmed or "but" in trimmed or "a " in trimmed or "b " in trimmed or "c " in trimmed
+                ):
+                    is_only_subject = True
+            #endfor
+            if not is_only_subject:
+                keep_chunks.append(trimmed)
+        #endfor
+
+        sentence = ", ".join(keep_chunks).strip()
+        if sentence == ",":
+            sentence = ""
+
+
+        return sentence
 
     # enddef
 
