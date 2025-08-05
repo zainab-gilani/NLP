@@ -5,7 +5,7 @@ class TestGradeParser(unittest.TestCase):
     def setUp(self):
         self.parser = GradeParser()
 
-    # enddef
+    #enddef
 
     # Tests for clean_input function
     def test_clean_input(self):
@@ -117,7 +117,7 @@ class TestGradeParser(unittest.TestCase):
         self.assertEqual(self.parser.normalize_subject("geog"), "geography")
         self.assertEqual(self.parser.normalize_subject("History"), "history")
         self.assertEqual(self.parser.normalize_subject("Law"), "law")
-    # enddef
+    #enddef
 
 
 
@@ -130,34 +130,34 @@ class TestGradeParser(unittest.TestCase):
         self.assertEqual(pairs.get("mathematics"), "A")
         self.assertEqual(pairs.get("physics"), "B")
         self.assertIsNone(pairs.get("chemistry"))  # dropped, shouldn't show up
-    # enddef
+    #enddef
 
     def test_find_grade_subject_pairs_2(self):
         pairs = self.parser.find_grade_subject_pairs("A in maths, B in chemistry, dropped physics")
         self.assertEqual(pairs.get("mathematics"), "A")
         self.assertEqual(pairs.get("chemistry"), "B")
         self.assertIsNone(pairs.get("physics"))
-    # enddef
+    #enddef
 
     def test_find_grade_subject_pairs_3(self):
         pairs = self.parser.find_grade_subject_pairs("Maths: A, Physics: B, English: C")
         self.assertEqual(pairs.get("mathematics"), "A")
         self.assertEqual(pairs.get("physics"), "B")
         self.assertEqual(pairs.get("english"), "C")
-    # enddef
+    #enddef
 
     def test_find_grade_subject_pairs_4(self):
         pairs = self.parser.find_grade_subject_pairs("biology B, chemistry A*, maths C")
         self.assertEqual(pairs.get("biology"), "B")
         self.assertEqual(pairs.get("chemistry"), "A*")
         self.assertEqual(pairs.get("mathematics"), "C")
-    # enddef
+    #enddef
 
     def test_find_grade_subject_pairs_5(self):
         pairs = self.parser.find_grade_subject_pairs("My grade in geography is D, and in history is C")
         self.assertEqual(pairs.get("geography"), "D")
         self.assertEqual(pairs.get("history"), "C")
-    # enddef
+    #enddef
 
     def test_find_grade_subject_pairs_6(self):
         pairs = self.parser.find_grade_subject_pairs("I have A* in comp sci, B in math, C in further math, failed art")
@@ -165,7 +165,7 @@ class TestGradeParser(unittest.TestCase):
         self.assertEqual(pairs.get("mathematics"), "B")
         self.assertEqual(pairs.get("further mathematics"), "C")
         self.assertIsNone(pairs.get("art"))
-    # enddef
+    #enddef
 
     def test_find_grade_subject_pairs_7(self):
         pairs = self.parser.find_grade_subject_pairs(
@@ -173,7 +173,7 @@ class TestGradeParser(unittest.TestCase):
         self.assertEqual(pairs.get("english literature"), "A")
         self.assertEqual(pairs.get("media studies"), "B")
         self.assertIsNone(pairs.get("psychology"))
-    # enddef
+    #enddef
 
 
 
@@ -181,30 +181,30 @@ class TestGradeParser(unittest.TestCase):
     def test_find_course_interest_medicine(self):
         result = self.parser.find_course_interest("I'm interested in medicine")
         self.assertIn("medicine", result)
-    # enddef
+    #enddef
 
     def test_find_course_interest_law(self):
         result = self.parser.find_course_interest("I want to apply for law")
         self.assertIn("law", result)
-    # enddef
+    #enddef
 
     def test_find_course_interest_economics(self):
         result = self.parser.find_course_interest("Looking for economics")
         self.assertIn("economics", result)
-    # enddef
+    #enddef
 
     def test_find_course_interest_psychology(self):
         result = self.parser.find_course_interest("Curious about psychology")
         self.assertIn("psychology", result)
-    # enddef
+    #enddef
 
     def test_find_course_interest_english_lit(self):
         result = self.parser.find_course_interest("Hoping to study English literature")
         self.assertIn("english literature", result)
-    # enddef
+    #enddef
 #endclass
 
 
 if __name__ == "__main__":
     unittest.main()
-# endif
+#endif
