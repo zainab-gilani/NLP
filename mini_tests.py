@@ -1,106 +1,55 @@
 import re
 
-from synonyms import SYNONYMS
+dropped_phrases = [
+    "dropped", "quit", "failed", "retook", "gave up", "left"
+]
 
-class GradeParser:
-    GRADE_PATTERN: str = r'\bA\*|A|B|C|D|E|U\b'  # Finds grades like A*, B, U, etc
+def remove_dropped(input):
+    sentence = input.lower()
+    # 1. Remove dropped chunks (handles “and drama”, “music and drama”, etc.)
+    for phrase in dropped_phrases:
+        # Pattern: phrase [subjects list, possibly with 'and' or commas]
+        # Accept 'i' before dropped phrase
+        pattern = rf"(?:\bi\s+)?{phrase}\s+([a-z\s]+(?:\sand\s[a-z\s]+)*)"
+        sentence = re.sub(pattern, '', sentence)
+    # 2. Cleanup: remove extra commas, multiple spaces, etc.
+    # Remove extra commas from where chunks were removed
+    # Remove extra commas from where chunks were removed
+    sentence = re.sub(r',\s*,+', ',', sentence)
+    sentence = re.sub(r'^\s*,\s*', '', sentence)
+    sentence = re.sub(r',\s*$', '', sentence)
+    # Remove spaces before/after commas
+    sentence = re.sub(r'\s+,', ',', sentence)
+    sentence = re.sub(r',\s+', ', ', sentence)
+    # Remove double spaces
+    sentence = re.sub(r'\s+', ' ', sentence)
+    # Remove trailing/leading "and"
+    sentence = re.sub(r',\s*and\s*$', '', sentence)
+    sentence = re.sub(r'\s*and\s*$', '', sentence)
+    sentence = re.sub(r'^\s*and\s*', '', sentence)
+    sentence = re.sub(r',\s*and\s*,', ',', sentence)
+    sentence = re.sub(r',\s*and\s+', ', ', sentence)
+    # Remove leading/trailing space
+    sentence = sentence.strip()
+    # If a comma was left after all other text is gone
+    if sentence == ",":
+        sentence = ""
 
-    def clean_input(self, input: str) -> str:
-        """
-        Cleans and standardizes the user input by converting to lowercase, removing unnecessary
-        words such as 'and' or 'commas' and stripping extra whitespace.
+    return sentence
 
-        :param input: str. Raw user input describing subjects, grades, and additional info.
-        :return: str. Cleaned and normalized input string.
-        """
-        # Replace 'and' with ',' for easier splitting, lowercase the whole string, strip extra spaces
-        input = input.replace("and", ",").lower().strip()
-        parts: list[str] = input.split(",")
+tests = [
+    ("A in maths and B in physics, and dropped chemistry", "a in maths and b in physics"),
+    ("Dropped maths, quit physics and left chemistry", ""),
+    ("Failed biology, retook psychology, gave up art", ""),
+    ("Dropped maths, A in physics, B in chemistry", "a in physics, b in chemistry"),
+    ("I dropped music and drama, but got A in English", "but got a in english"),
+    ("Retook nothing, just got C in Geography", "just got c in geography"),
+]
 
-        clean_parts: list[str] = []
-
-        # Remove empty or whitespace-only parts
-        for p in parts:
-            if p.strip():
-                clean_parts.append(p.strip())
-            # endif
-        # endfor
-
-        # Join the cleaned parts back together, comma separated
-        input = ", ".join(clean_parts)
-
-        return input
-
-    # enddef
-
-    def find_course_interest(self, input: str) -> list[str]:
-        interest_phrases: list[str] = SYNONYMS["interest"]
-        courses_dict: dict[str, list[str]] = SYNONYMS["courses"]
-        found_courses: list[str] = []
-
-        cleaned: str = self.clean_input(input)
-        cleaned_joined: str = cleaned.lower()
-
-        # Build search list with all (main, synonym) pairs
-        course_search_list: list[tuple[str, str]] = []
-
-        for course, synonym in course_search_list:
-            if "lit" in synonym:
-                print(course, ":", synonym)
-
-
-
-        for course, synonyms in courses_dict.items():
-            course_search_list.append((course, course))
-            for synonym in synonyms:
-                course_search_list.append((course, synonym))
-
-        # NOW check for lit:
-        for course, synonym in course_search_list:
-            if "lit" in synonym:
-                print(course, ":", synonym)
-
-        # sort by length of search_name, so longer names get checked first
-        for i in range(len(course_search_list)):
-            for j in range(i + 1, len(course_search_list)):
-                if len(course_search_list[j][1]) > len(course_search_list[i][1]):
-                    temp = course_search_list[i]
-                    course_search_list[i] = course_search_list[j]
-                    course_search_list[j] = temp
-
-        # find if any interest phrase is in the string
-        found_interest_phrase: bool = False
-        for phrase in interest_phrases:
-            if phrase in cleaned_joined:
-                found_interest_phrase = True
-                break
-
-        # always try to add all matches if interest phrase is present
-        if found_interest_phrase:
-            for course, search_name in course_search_list:
-                if search_name in cleaned_joined:
-                    # add the course ONLY IF NOT ALREADY IN THE LIST
-                    if course not in found_courses:
-                        found_courses.append(course)
-        # fallback if nothing matched
-        if not found_courses:
-            for course, search_name in course_search_list:
-                if search_name in cleaned_joined:
-                    if course not in found_courses:
-                        found_courses.append(course)
-
-        for course, synonyms in SYNONYMS["courses"].items():
-            if "english literature" in synonyms:
-                print("FOUND in:", course)
-
-        print("Cleaned joined input:", cleaned_joined)
-        print("Course search list:", course_search_list)
-        print("Final found_courses:", found_courses)
-
-        return found_courses
-
-
-#endclass
-
-parser = GradeParser()
-cleaned = parser.find_course_interest("Hoping to study English literature")
+for test_input, expected in tests:
+    result = remove_dropped(test_input)
+    print(f"INPUT: {test_input}")
+    print(f"OUTPUT: {result}")
+    print(f"EXPECTED: {expected}")
+    print("PASS:", result == expected)
+    print("-----")
