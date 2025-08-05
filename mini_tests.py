@@ -33,55 +33,74 @@ class GradeParser:
 
     # enddef
 
-    def find_dropped_subjects(self, input: str) -> str:
-        cleaned = self.clean_input(input)
-        parts = [x.strip() for x in cleaned.split(",") if x.strip()]
+    def find_course_interest(self, input: str) -> list[str]:
+        interest_phrases: list[str] = SYNONYMS["interest"]
+        courses_dict: dict[str, list[str]] = SYNONYMS["courses"]
+        found_courses: list[str] = []
 
-        print("DEBUG: parts after clean/split =", parts)
+        cleaned: str = self.clean_input(input)
+        cleaned_joined: str = cleaned.lower()
 
-        dropped = []
-        skip_indices = set()
+        # Build search list with all (main, synonym) pairs
+        course_search_list: list[tuple[str, str]] = []
 
-        for idx, part in enumerate(parts):
-            found = False
-            for word in SYNONYMS["dropped"]:
-                pos = part.find(word)
-                if pos != -1:
-                    found = True
-                    possible = part[pos + len(word):].strip()
-                    if possible:
-                        # Split by 'and' and ','
-                        for subj in re.split(r'and|,', possible):
-                            if subj.strip():
-                                dropped.append(subj.strip())
-                                skip_indices.add(idx)
-                    # Look ahead for the orphan subject chunk
-                    if idx + 1 < len(parts):
-                        nxt = parts[idx + 1]
-                        # If it's just a subject word (all alpha, no keywords), drop it too
-                        if re.match(r'^[a-z\s]+$', nxt) and not any(x in nxt for x in ['but', 'got', 'in']):
-                            dropped.append(nxt.strip())
-                            skip_indices.add(idx + 1)
-                    break
-            if found:
-                continue
+        for course, synonym in course_search_list:
+            if "lit" in synonym:
+                print(course, ":", synonym)
 
-        print("DEBUG: dropped =", dropped)
-        print("DEBUG: skip_indices =", skip_indices)
 
-        kept = []
-        for idx, part in enumerate(parts):
-            if idx in skip_indices:
-                continue
-            if part in dropped:
-                continue
-            kept.append(part)
 
-        print("DEBUG: kept =", kept)
-        return ", ".join(kept)
+        for course, synonyms in courses_dict.items():
+            course_search_list.append((course, course))
+            for synonym in synonyms:
+                course_search_list.append((course, synonym))
+
+        # NOW check for lit:
+        for course, synonym in course_search_list:
+            if "lit" in synonym:
+                print(course, ":", synonym)
+
+        # sort by length of search_name, so longer names get checked first
+        for i in range(len(course_search_list)):
+            for j in range(i + 1, len(course_search_list)):
+                if len(course_search_list[j][1]) > len(course_search_list[i][1]):
+                    temp = course_search_list[i]
+                    course_search_list[i] = course_search_list[j]
+                    course_search_list[j] = temp
+
+        # find if any interest phrase is in the string
+        found_interest_phrase: bool = False
+        for phrase in interest_phrases:
+            if phrase in cleaned_joined:
+                found_interest_phrase = True
+                break
+
+        # always try to add all matches if interest phrase is present
+        if found_interest_phrase:
+            for course, search_name in course_search_list:
+                if search_name in cleaned_joined:
+                    # add the course ONLY IF NOT ALREADY IN THE LIST
+                    if course not in found_courses:
+                        found_courses.append(course)
+        # fallback if nothing matched
+        if not found_courses:
+            for course, search_name in course_search_list:
+                if search_name in cleaned_joined:
+                    if course not in found_courses:
+                        found_courses.append(course)
+
+        for course, synonyms in SYNONYMS["courses"].items():
+            if "english literature" in synonyms:
+                print("FOUND in:", course)
+
+        print("Cleaned joined input:", cleaned_joined)
+        print("Course search list:", course_search_list)
+        print("Final found_courses:", found_courses)
+
+        return found_courses
 
 
 #endclass
 
 parser = GradeParser()
-cleaned = parser.find_dropped_subjects("I dropped music and drama, but got A in English")
+cleaned = parser.find_course_interest("Hoping to study English literature")
