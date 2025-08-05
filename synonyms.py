@@ -44,8 +44,12 @@ SYNONYMS = {
     # Subject names and different ways these can be spelt
     "subjects": {
         "mathematics": [
-            "math", "maths", "mathematics", "further maths", "further mathematics", "core maths", "pure maths",
+            "math", "maths", "mathematics", "core maths", "pure maths",
             "stats", "statistics", "mechanics", "applied maths", "decision maths"
+        ],
+        "further mathematics": [
+            "further mathematics", "further math", "further maths", "further-math", "f.maths", "f.math",
+            "fmaths", "fmath", "furthermaths", "furthermath", "f maths", "f math"
         ],
         "computer science": [
             "cs", "comp sci", "computing", "computer science", "information technology", "it", "ict", "informatics",
@@ -331,5 +335,15 @@ SYNONYMS = {
             "media production", "film studies", "film and media", "broadcast media", "mass communication",
             "media degree"
         ],
+        "mathematics": [
+            "mathematics", "maths", "math", "core maths", "pure maths", "applied maths", "decision maths",
+            "stats", "statistics", "mechanics", "math degree", "mathematics degree", "core mathematics",
+            "f.maths", "f.math"
+        ],
+        "further mathematics": [
+            "further mathematics", "further maths", "further math", "f.maths", "f.math", "further-math",
+            "fmaths", "fmath", "furthermaths", "furthermath", "f maths", "f math", "further mathematics degree"
+        ],
+
     }
 }
