@@ -17,7 +17,7 @@ class GradeParser:
         """
 
         # Replace 'and' with ',' for easier splitting, lowercase the whole string, strip extra spaces
-        input: str = input.replace("and", ",").lower().strip()
+        input: str = input.replace(" and ", ",").lower().strip()
         parts: list[str] = input.split(",")
 
         clean_parts: list[str] = []
@@ -528,5 +528,7 @@ class GradeParser:
 
 parser = GradeParser()
 
-print(parser.parse(
-    "I got A in maths, B in physics and dropped chemistry, and I'm interested in medicine and english literature."))
+# print(parser.parse(
+#     "I got A in maths, B in physics and dropped chemistry, and I'm interested in medicine and english literature."))
+
+print(parser.parse("Please help me decide as I like Maths and want to do Engineering. I got AAB in Math Chem and Bio."))
