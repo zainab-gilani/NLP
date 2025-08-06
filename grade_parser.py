@@ -106,7 +106,7 @@ class GradeParser:
 
         # Patterns for different input formats
         patterns: list[tuple[str, str]] = [
-            (r'(?:^|[,\s])(?:got\s+)?(A\*|A|B|C|D|E|U)\s+in\s+([a-zA-Z\s]+?)(?:,|$)', "grade_in_subject"),
+            (r'(?:^|[,\s])(?:got\s+)?(A\*|A|B|C|D|E|U)\s+in\s+([a-zA-Z\s]+?)(?:[,.]|$)', "grade_in_subject"),
             (r"([a-zA-Z\s]+?)\s*[:\-]\s*(A\*|A|B|C|D|E|U)", "subject_colon_grade"),
             (r"([a-zA-Z\s]+?)\s+(A\*|A|B|C|D|E|U)(?:,|$)", "subject_grade"),
             (r"(?:my grade in|in)\s+([a-zA-Z\s]+?)\s+is\s+(A\*|A|B|C|D|E|U)", "in_subject_is_grade"),
@@ -115,7 +115,7 @@ class GradeParser:
         # Debug: Shows matches for each pattern
         # print("CLEANED SENTENCE:", cleaned_sentence)
         # for pattern, _ in patterns:
-        #     print("Pattern:", pattern, re.IGNORECASE)
+        #     print("Pattern:", pattern)
         #     print("Matches:", re.findall(pattern, cleaned_sentence, re.IGNORECASE))
         # #endfor
 
@@ -176,7 +176,10 @@ class GradeParser:
         results: dict[str, str] = {}
 
         # Separates the chunk of grades into singular elements in a list
-        pattern: str = r'\b([A\*ABCDUE]{1,5})\s+in\s+([a-zA-Z\s,]+)'
+        # Pattern should only match grouped grades like "AAB in maths, physics, biology"
+        # Must have at least 2 single letter grades (or A* counts as one grade)
+        # So AAB, A*BC, BCC would match, but A*, B, C would not
+        pattern: str = r'\b((?:[ABCDUE]|A\*){2,})\s+in\s+([a-zA-Z\s,]+?)(?:\.|,\s*[a-zA-Z]+\s+in\s|$)'
         matches: list[tuple[str, str]] = re.findall(pattern, input, re.IGNORECASE)
 
         for match in matches:

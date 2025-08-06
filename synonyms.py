@@ -345,5 +345,10 @@ SYNONYMS = {
             "fmaths", "fmath", "furthermaths", "furthermath", "f maths", "f math", "further mathematics degree"
         ],
 
+        "drama": [
+            "drama", "theatre", "theater", "theatre studies", "performing arts", "drama studies",
+            "acting", "performance studies", "dramatic arts"
+        ],
+
     }
 }
