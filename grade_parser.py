@@ -570,20 +570,3 @@ class GradeParser:
 
 
 #endclass
-
-parser = GradeParser()
-
-# print(parser.parse(
-#     "I got A in maths, B in physics, and I'm interested in medicine and english literature."))
-
-print(parser.parse("Please help me decide as I like Maths and want to do Engineering. I got A in Math Chem and Bio."))
-
-# print(parser.parse("I expect to get A* in Further Maths, B in Chemistry and C in Bio. I want to pursue Drama in my uni."))
-# print(
-#     parser.parse("I expect to get A* in Further Maths, B in Chemistry and C in Bio. I want to pursue Drama in my uni."))
-
-# print(
-#      parser.parse("I got A in arts b in maths and A in chemistry. Which course and uni do you recommend."))
-#
-# print(
-#      parser.parse("I am hoping to get A in Math B in chem and B in Physics. I want to study medicine. Which uni do I go to?"))
