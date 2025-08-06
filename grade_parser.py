@@ -176,7 +176,7 @@ class GradeParser:
         results: dict[str, str] = {}
 
         # Separates the chunk of grades into singular elements in a list
-        pattern: str = r'\b([A\*ABCDUE]{2,5})\b\s+in\s+([a-zA-Z\s,]+)'
+        pattern: str = r'\b([A\*ABCDUE]{1,5})\s+in\s+([a-zA-Z\s,]+)'
         matches: list[tuple[str, str]] = re.findall(pattern, input, re.IGNORECASE)
 
         for match in matches:
@@ -202,11 +202,11 @@ class GradeParser:
 
             # Clean up subjects to always be separated by a space
             subjects_str = subjects_str.replace(" and ", ",")
-            subjects_str = subjects_str.replace(",", " ")
+            # subjects_str = subjects_str.replace(",", " ")
             subjects_str = subjects_str.replace("  ", " ")
 
             # Cleans each subject and adds to list
-            subjects_raw_list: list[str] = subjects_str.split(" ")
+            subjects_raw_list: list[str] = subjects_str.split(",")
             subjects_list: list[str] = []
             for subject in subjects_raw_list:
                 subject_clean: str = subject.lower().strip()
@@ -495,15 +495,22 @@ class GradeParser:
         # Removes any dropped/quit subjects from the input
         cleaned: str = self.find_dropped_subjects(input)
 
+        all_grades: dict[str, str] = {}
+
         # Extracts grouped grades (e.g., "AAB in maths, chem, bio")
         multi_grades: dict[str, str] = self.find_multi_grades(cleaned)
 
-        # Extracts normal grade-subject pairs (e.g., "A in maths, B in chemistry")
-        grades: dict[str, str] = self.find_grade_subject_pairs(cleaned)
-
-        # Combines the two, letting multi_grades overwrite regular grades if they overlap
-        all_grades: dict[str, str] = grades.copy()
+        # Update our all grades dictionary
         all_grades.update(multi_grades)
+
+        # If multi grades were found, skip extracting these as normal grades
+        # as we may not get the correct grades
+        if len(multi_grades.keys()) < 3:
+            # Extracts normal grade-subject pairs (e.g., "A in maths, B in chemistry")
+            grades: dict[str, str] = self.find_grade_subject_pairs(cleaned)
+
+            all_grades.update(grades)
+        #endif
 
         # Gets all the course interests from the original input
         interests: list[str] = self.find_course_interest(input)
@@ -533,4 +540,7 @@ parser = GradeParser()
 # print(parser.parse(
 #     "I got A in maths, B in physics and dropped chemistry, and I'm interested in medicine and english literature."))
 
-print(parser.parse("Please help me decide as I like Maths and want to do Engineering. I got AAB in Math Chem and Bio."))
+#print(parser.parse("Please help me decide as I like Maths and want to do Engineering. I got A in Math Chem and Bio."))
+
+#print(parser.parse("I expect to get A* in Further Maths, B in Chemistry and C in Bio. I want to pursue Drama in my uni."))
+print(parser.parse("I expect to get A* in Further Maths, B in Chemistry and C in Bio. I want to pursue Drama in my uni."))
