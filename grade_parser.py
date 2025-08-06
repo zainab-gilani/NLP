@@ -200,11 +200,13 @@ class GradeParser:
                 #endif
             #endwhile
 
-            # Cleans up subject_str, replacing "and" with "," for splitting
-            subjects_str_replaced: str = subjects_str.replace("and", ",")
-            subjects_raw_list: list[str] = subjects_str_replaced.split(",")
+            # Clean up subjects to always be separated by a space
+            subjects_str = subjects_str.replace(" and ", ",")
+            subjects_str = subjects_str.replace(",", " ")
+            subjects_str = subjects_str.replace("  ", " ")
 
             # Cleans each subject and adds to list
+            subjects_raw_list: list[str] = subjects_str.split(" ")
             subjects_list: list[str] = []
             for subject in subjects_raw_list:
                 subject_clean: str = subject.lower().strip()
