@@ -140,7 +140,7 @@ SYNONYMS = {
             "persian"
         ],
         "art": [
-            "art", "fine art", "visual art", "graphics", "graphic design", "photography", "art & design",
+            "art", "arts", "fine art", "visual art", "graphics", "graphic design", "photography", "art & design",
             "sculpture"
         ],
         "media studies": [
@@ -208,9 +208,14 @@ SYNONYMS = {
         "engineering": [
             "engineering", "eng", "engineering degree", "mechanical engineering", "electrical engineering",
             "civil engineering",
-            "chemical engineering", "biomedical engineering", "mechatronics", "aerospace engineering",
+            "chemical engineering", "mechatronics", "aerospace engineering",
             "structural engineering",
             "electronic engineering", "software engineering", "engineering science"
+        ],
+        
+        "biomedical engineering": [
+            "biomedical engineering", "biomedical eng", "biomed engineering", "bioengineering",
+            "medical engineering"
         ],
 
         "business": [

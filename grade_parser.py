@@ -115,9 +115,56 @@ class GradeParser:
         """
 
         results: dict[str, str] = {}
+        
+        # Keep track of original input for special pattern processing
+        modified_input = input
+        
+        # First, handle "A in Subject1 Subject2 and Subject3" pattern on original input
+        # This needs to be done before clean_input replaces "and" with ","
+        # Only match when there are multiple single-word subjects (like "Math Chem and Bio")
+        single_grade_multiple_subjects_pattern = r'\b(?:got\s+|have\s+|achieved\s+|received\s+)?(A\*|[A-U])\s+in\s+([A-Za-z]+\s+[A-Za-z]+\s+and\s+[A-Za-z]+)'
+        matches = re.findall(single_grade_multiple_subjects_pattern, input, re.IGNORECASE)
+        
+        for match in matches:
+            grade = match[0].strip().upper()
+            subjects_str = match[1].strip()
+            
+            # Split by "and" to get individual subjects
+            subjects = subjects_str.split(" and ")
+            
+            for subject in subjects:
+                subject = subject.strip()
+                # Each subject might be multiple words like "Further Maths"
+                # But we also need to handle "Math Chem" as two separate subjects
+                # Let's check if the whole phrase is a known subject first
+                subject_norm = self.normalize_subject(subject.lower())
+                
+                if subject_norm == subject.lower():
+                    # Not recognized as a whole, try splitting by spaces
+                    words = subject.split()
+                    for word in words:
+                        word_norm = self.normalize_subject(word.lower())
+                        if word_norm != word.lower():  # It got normalized
+                            if word_norm not in results:
+                                results[word_norm] = grade
+                            #endif
+                        #endif
+                    #endfor
+                else:
+                    # Recognized as a whole subject
+                    if subject_norm not in results:
+                        results[subject_norm] = grade
+                    #endif
+                #endif
+            #endfor
+            
+            # Remove the matched pattern from input to avoid double processing
+            pattern_to_remove = rf'\b(?:got\s+|have\s+|achieved\s+|received\s+)?{re.escape(match[0])}\s+in\s+{re.escape(match[1])}'
+            modified_input = re.sub(pattern_to_remove, '', modified_input, flags=re.IGNORECASE)
+        #endfor
 
-        # Start with clean sentence, dropped subjects removed
-        cleaned_sentence: str = self.find_dropped_subjects(input)
+        # Start with clean sentence, dropped subjects removed  
+        cleaned_sentence: str = self.find_dropped_subjects(modified_input)
 
         # Helper function to process multi-grade matches
         def process_multi_grade(match) -> str:
@@ -172,11 +219,36 @@ class GradeParser:
         remaining: str = re.sub(multi_pattern, process_multi_grade, cleaned_sentence, flags=re.IGNORECASE)
 
         # Second pass: Find single-grade patterns in remaining text
+        # First handle space-separated format like "Maths A Physics B"
+        # Clean up multiple spaces first
+        remaining_cleaned = re.sub(r'\s+', ' ', remaining)
+        
+        # Match subject-grade pairs with flexible spacing
+        # Include A* handling - make sure to match A* first
+        words_and_grades = re.findall(r'\b([a-zA-Z]+(?:\s+[a-zA-Z]+)?)\s+(A\*|[A-U]\b)', remaining_cleaned, re.IGNORECASE)
+        for word, grade in words_and_grades:
+            # Check if this word/phrase is a known subject
+            subject_norm = self.normalize_subject(word.lower().strip())
+            # Add if it's a valid subject (either normalized or already a main subject name)
+            if subject_norm and subject_norm not in results:
+                # Check it's actually a subject by seeing if it's in our subjects dict
+                is_subject = False
+                for main_subj, synonyms in SYNONYMS["subjects"].items():
+                    if subject_norm == main_subj or word.lower().strip() in synonyms:
+                        is_subject = True
+                        break
+                    #endif
+                #endfor
+                if is_subject:
+                    results[subject_norm] = grade.upper()
+                #endif
+            #endif
+        #endfor
+        
         patterns: list[tuple[str, str]] = [
             (r'\b(?:got\s+)?(A\*|[A-U])\s+in\s+([a-zA-Z]+(?:\s+[a-zA-Z]+)*?)(?=\s+[A-U]\s+in\s+|[,.]|$)',
              "grade_in_subject"),
             (r"([a-zA-Z\s]+?)\s*[:\-]\s*(A\*|A|B|C|D|E|U)", "subject_colon_grade"),
-            (r"([a-zA-Z\s]+?)\s+(A\*|A|B|C|D|E|U)(?:,|$)", "subject_grade"),
             (r"(?:my grade in|in)\s+([a-zA-Z\s]+?)\s+is\s+(A\*|A|B|C|D|E|U)", "in_subject_is_grade"),
         ]
 
@@ -463,10 +535,26 @@ class GradeParser:
         # Gets all the course interests from the original input
         interests: list[str] = self.find_course_interest(input)
 
-        # Removes any course from interests if it already appears in grades (e.g., "A in medicine")
+        # Need to also handle - "I like Maths" pattern
+        # When found, keep mathematics as an interest even if there's a grade for it
+        keep_subjects_with_grades = []
+        input_lower = input.lower()
+        
+        # Check for explicit "I like X" pattern where X is a subject
+        like_pattern = r'\b(?:i\s+)?(?:like|love|enjoy)\s+([a-z]+)'
+        like_matches = re.findall(like_pattern, input_lower)
+        for match in like_matches:
+            subject_norm = self.normalize_subject(match)
+            if subject_norm != match and subject_norm in interests:
+                keep_subjects_with_grades.append(subject_norm)
+            #endif
+        #endfor
+
+        # Removes any course from interests if it already appears in grades
+        # UNLESS it was explicitly mentioned with "I like/love/enjoy"
         clean_interests: list[str] = []
         for i in interests:
-            if i not in all_grades:
+            if i not in all_grades or i in keep_subjects_with_grades:
                 clean_interests.append(i)
             #endif
         #endfor
@@ -486,9 +574,9 @@ class GradeParser:
 parser = GradeParser()
 
 # print(parser.parse(
-#     "I got A in maths, B in physics and dropped chemistry, and I'm interested in medicine and english literature."))
+#     "I got A in maths, B in physics, and I'm interested in medicine and english literature."))
 
-# print(parser.parse("Please help me decide as I like Maths and want to do Engineering. I got A in Math Chem and Bio."))
+print(parser.parse("Please help me decide as I like Maths and want to do Engineering. I got A in Math Chem and Bio."))
 
 # print(parser.parse("I expect to get A* in Further Maths, B in Chemistry and C in Bio. I want to pursue Drama in my uni."))
 # print(
@@ -496,6 +584,6 @@ parser = GradeParser()
 
 # print(
 #      parser.parse("I got A in arts b in maths and A in chemistry. Which course and uni do you recommend."))
-
-print(
-     parser.parse("I am hoping to get A in Math B in chem and B in Physics. I want to study medicine. Which uni do I go to?"))
+#
+# print(
+#      parser.parse("I am hoping to get A in Math B in chem and B in Physics. I want to study medicine. Which uni do I go to?"))
