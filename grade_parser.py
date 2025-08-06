@@ -71,14 +71,27 @@ class GradeParser:
         # After regex, splits by commas and filter out any chunk that's just a stray subject
 
         keep: list[str] = []
+        parts = sentence.split(",")
 
-        for part in sentence.split(","):
-            trimmed: str = part.strip()
+        # Check if input has a dropped keyword
+        has_dropped_keyword: bool = False
+        for phrase in dropped_phrases:
+            if phrase in input.lower():
+                has_dropped_keyword = True
+                break
+            #endif
+        #endfor
 
-            # Only keeps chunk if it actually looks like a grade/real info
-            # (e.g. "got a in maths", "b in chem", etc)
-            # Removes single words like "music" or "drama" at start
-            if trimmed and not (trimmed.isalpha() and len(trimmed.split()) == 1):
+        # Process each part
+        for i in range(len(parts)):
+            trimmed: str = parts[i].strip()
+
+            # Only removes single words if they're at the very start AND the original
+            # input had a dropped phrase. Otherwise keep them (they might be part of a list)
+            is_single_word = trimmed.isalpha() and len(trimmed.split()) == 1
+            at_start = i == 0
+
+            if trimmed and not (is_single_word and at_start and has_dropped_keyword):
                 keep.append(trimmed)
             #endif
         #endfor
@@ -90,155 +103,104 @@ class GradeParser:
 
     #enddef
 
-    def find_grade_subject_pairs(self, input: str) -> dict[str, str]:
+    def find_all_grades(self, input: str) -> dict[str, str]:
         """
-        Extracts individual subject-grade pairs from the remaining input,
-        using several patterns to catch all possible combos.
+        Unified function to extract all grade/subject pairs from input,
+        handling both multi-grade patterns (AAB in ...) and single-grade patterns.
+
         :param input: str
-            The cleaned input sentence containing grade/subject info.
+            The user input containing grade/subject info.
         :return: dict
             Returns a dict of {normalized_subject: grade}.
         """
 
         results: dict[str, str] = {}
 
+        # Start with clean sentence, dropped subjects removed
         cleaned_sentence: str = self.find_dropped_subjects(input)
 
-        # Patterns for different input formats
-        patterns: list[tuple[str, str]] = [
-            (r'(?:^|[,\s])(?:got\s+)?(A\*|A|B|C|D|E|U)\s+in\s+([a-zA-Z\s]+?)(?:[,.]|$)', "grade_in_subject"),
-            (r"([a-zA-Z\s]+?)\s*[:\-]\s*(A\*|A|B|C|D|E|U)", "subject_colon_grade"),
-            (r"([a-zA-Z\s]+?)\s+(A\*|A|B|C|D|E|U)(?:,|$)", "subject_grade"),
-            (r"(?:my grade in|in)\s+([a-zA-Z\s]+?)\s+is\s+(A\*|A|B|C|D|E|U)", "in_subject_is_grade"),
-        ]
+        # Helper function to process multi-grade matches
+        def process_multi_grade(match) -> str:
+            grades_str: str = match.group(1)
+            subjects_str: str = match.group(2)
 
-        # Debug: Shows matches for each pattern
-        # print("CLEANED SENTENCE:", cleaned_sentence)
-        # for pattern, _ in patterns:
-        #     print("Pattern:", pattern)
-        #     print("Matches:", re.findall(pattern, cleaned_sentence, re.IGNORECASE))
-        # #endfor
-
-        # Try all patterns to catch different formats
-        for pattern, mode in patterns:
-            matches: list[tuple[str, str]] = re.findall(pattern, cleaned_sentence, re.IGNORECASE)
-
-            # Debug: show matches for each pattern
-            # print(f"Pattern: {pattern}, Matches: {matches}")
-
-            for match in matches:
-                if mode == "grade_in_subject":
-                    # Pattern matches will be either 2 or 3 groups due to (?:^|[^a-zA-Z])
-                    if len(match) == 3:
-                        grade: str = match[1]
-                        subject: str = match[2]
-                    else:  # Subject first, then grade
-                        grade = match[0]
-                        subject = match[1]
-                    #endif
-                else:
-                    subject = match[0]
-                    grade = match[1]
-                #endif
-
-                # Clean subject and grade
-                subject = subject.strip().lower()
-                grade = grade.strip().upper()
-
-                # Normalize subject to main name
-                subject_norm: str = self.normalize_subject(subject)
-
-                # Only add if not already in the dict
-                if subject_norm and subject_norm not in results:
-                    results[subject_norm]: dict[str, str] = grade
-                #endif
-            #endfor
-        #endfor
-
-        return results
-
-    #enddef
-
-    def find_multi_grades(self, input: str) -> dict[str, str]:
-        """
-        Extracts multiple grade/subject pairs from sentences with grouped grades, such as 'ABB in maths,
-        physics and biology'. Pairs each grade with the corresponding subject in order and returns a dictionary
-        mapping normalized subject names to grades.
-
-        :param input: str
-            The cleaned input sentence containing grade/subject info.
-        :return: dict
-            Keys are normalized subject names (str), values are grades (str).
-                     Example: {'mathematics': 'A', 'physics': 'B', 'biology': 'B'}
-                     Returns an empty dict if no multi-grade pattern is found.
-        """
-
-        results: dict[str, str] = {}
-
-        # Separates the chunk of grades into singular elements in a list
-        # Pattern should only match grouped grades like "AAB in maths, physics, biology"
-        # Must have at least 2 single letter grades (or A* counts as one grade)
-        # So AAB, A*BC, BCC would match, but A*, B, C would not
-        pattern: str = r'\b((?:[ABCDUE]|A\*){2,})\s+in\s+([a-zA-Z\s,]+?)(?:\.|,\s*[a-zA-Z]+\s+in\s|$)'
-        matches: list[tuple[str, str]] = re.findall(pattern, input, re.IGNORECASE)
-
-        for match in matches:
-            grades_str: str = match[0]
-            subjects_str: str = match[1]
-
-            # Splits grades_str into a list
+            # Split grades string into individual grades
             grades: list[str] = []
             i: int = 0
 
             while i < len(grades_str):
-                # If current grade is "A" and next grade is "*", join together to make A*
+                # Handle A* as single grade
                 if grades_str[i].upper() == "A" and (i + 1) < len(grades_str) and grades_str[i + 1] == "*":
                     grades.append("A*")
-                    # Skips over the "*"
                     i += 2
                 else:
-                    # Else, add the single letter grade
                     grades.append(grades_str[i].upper())
                     i += 1
                 #endif
             #endwhile
 
-            # Clean up subjects to always be separated by a space
+            # Clean and split subjects
             subjects_str = subjects_str.replace(" and ", ",")
-            # subjects_str = subjects_str.replace(",", " ")
             subjects_str = subjects_str.replace("  ", " ")
 
-            # Cleans each subject and adds to list
-            subjects_raw_list: list[str] = subjects_str.split(",")
             subjects_list: list[str] = []
-            for subject in subjects_raw_list:
+            for subject in subjects_str.split(","):
                 subject_clean: str = subject.lower().strip()
                 if subject_clean:
                     subjects_list.append(subject_clean)
                 #endif
             #endfor
 
-            # Pairs each subject with grade
+            # Pair grades with subjects
             for i in range(len(subjects_list)):
-                # Uses normalize_subject function to clean input and remove unnecessary parts
                 subject_norm: str = self.normalize_subject(subjects_list[i])
-                # Assigns grade by position
-                if i < len(grades):
-                    # Checks to see if there is the same amount of grades and subjects, and pairs them in order
-                    grade: str = grades[i]
-                else:
-                    # If there are more subjects than grades by mistake, the last grade is repeated
-                    grade: str = grades[-1]
-                #endif
+                # Assign grade by position, use last grade if more subjects than grades
+                grade: str = grades[i] if i < len(grades) else grades[-1]
 
-                # Adds normalized subject and assigned grade to dictionary
-                results[subject_norm]: dict[str, str] = grade
+                if subject_norm:
+                    results[subject_norm] = grade
+                #endif
             #endfor
 
-            # Removes multi-grade and subject part of the sentence
-            # so other functions don't have to parse it again
-            chunk: str = f"{grades_str} in {subjects_str}"
-            input: str = input.replace(chunk, "")
+            # Return empty string to remove this from sentence
+            return ""
+
+        #enddef
+
+        # First pass: Find and process multi-grade patterns (AAB in ...)
+        multi_pattern: str = r'\b((?:[ABCDUE]|A\*){2,})\s+in\s+([a-zA-Z\s,]+?)(?:\.|,\s*[a-zA-Z]+\s+in\s|$)'
+        remaining: str = re.sub(multi_pattern, process_multi_grade, cleaned_sentence, flags=re.IGNORECASE)
+
+        # Second pass: Find single-grade patterns in remaining text
+        patterns: list[tuple[str, str]] = [
+            (r'\b(?:got\s+)?(A\*|[A-U])\s+in\s+([a-zA-Z]+(?:\s+[a-zA-Z]+)*?)(?=\s+[A-U]\s+in\s+|[,.]|$)',
+             "grade_in_subject"),
+            (r"([a-zA-Z\s]+?)\s*[:\-]\s*(A\*|A|B|C|D|E|U)", "subject_colon_grade"),
+            (r"([a-zA-Z\s]+?)\s+(A\*|A|B|C|D|E|U)(?:,|$)", "subject_grade"),
+            (r"(?:my grade in|in)\s+([a-zA-Z\s]+?)\s+is\s+(A\*|A|B|C|D|E|U)", "in_subject_is_grade"),
+        ]
+
+        for pattern, mode in patterns:
+            matches: list[tuple[str, str]] = re.findall(pattern, remaining, re.IGNORECASE)
+
+            for match in matches:
+                if mode == "grade_in_subject":
+                    grade: str = match[0]
+                    subject: str = match[1]
+                else:
+                    subject: str = match[0]
+                    grade: str = match[1]
+                #endif
+
+                # Clean and normalize
+                subject_norm: str = self.normalize_subject(subject.strip().lower())
+                grade_clean: str = grade.strip().upper()
+
+                # Only add if not already found
+                if subject_norm and subject_norm not in results:
+                    results[subject_norm] = grade_clean
+                #endif
+            #endfor
         #endfor
 
         return results
@@ -495,25 +457,8 @@ class GradeParser:
             }
         """
 
-        # Removes any dropped/quit subjects from the input
-        cleaned: str = self.find_dropped_subjects(input)
-
-        all_grades: dict[str, str] = {}
-
-        # Extracts grouped grades (e.g., "AAB in maths, chem, bio")
-        multi_grades: dict[str, str] = self.find_multi_grades(cleaned)
-
-        # Update our all grades dictionary
-        all_grades.update(multi_grades)
-
-        # If multi grades were found, skip extracting these as normal grades
-        # as we may not get the correct grades
-        if len(multi_grades.keys()) < 3:
-            # Extracts normal grade-subject pairs (e.g., "A in maths, B in chemistry")
-            grades: dict[str, str] = self.find_grade_subject_pairs(cleaned)
-
-            all_grades.update(grades)
-        #endif
+        # Use the new unified function to get all grades
+        all_grades: dict[str, str] = self.find_all_grades(input)
 
         # Gets all the course interests from the original input
         interests: list[str] = self.find_course_interest(input)
@@ -543,7 +488,14 @@ parser = GradeParser()
 # print(parser.parse(
 #     "I got A in maths, B in physics and dropped chemistry, and I'm interested in medicine and english literature."))
 
-#print(parser.parse("Please help me decide as I like Maths and want to do Engineering. I got A in Math Chem and Bio."))
+# print(parser.parse("Please help me decide as I like Maths and want to do Engineering. I got A in Math Chem and Bio."))
 
-#print(parser.parse("I expect to get A* in Further Maths, B in Chemistry and C in Bio. I want to pursue Drama in my uni."))
-print(parser.parse("I expect to get A* in Further Maths, B in Chemistry and C in Bio. I want to pursue Drama in my uni."))
+# print(parser.parse("I expect to get A* in Further Maths, B in Chemistry and C in Bio. I want to pursue Drama in my uni."))
+# print(
+#     parser.parse("I expect to get A* in Further Maths, B in Chemistry and C in Bio. I want to pursue Drama in my uni."))
+
+# print(
+#      parser.parse("I got A in arts b in maths and A in chemistry. Which course and uni do you recommend."))
+
+print(
+     parser.parse("I am hoping to get A in Math B in chem and B in Physics. I want to study medicine. Which uni do I go to?"))

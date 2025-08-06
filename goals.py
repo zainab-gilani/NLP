@@ -53,9 +53,4 @@
 
 
 # OBSERVATIONS
-# 6 Aug 2025: Although all my tests pass and various attempts to find flaws seem to give me
-# the correct output, I realize there is a big improvement I could have been earlier on and that is
-# to remove all the matched strings from the original input as each function performed its own parsing.
-# This way the next function call would have received a partial input but without the parts that have
-# already been parsed. For instance, when parsing interests, it would have only parsed the left over
-# remainder string after having removed all the parsed subjects and grades.
+# 6 Aug 2025:

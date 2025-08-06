@@ -49,7 +49,7 @@ SYNONYMS = {
         ],
         "further mathematics": [
             "further mathematics", "further math", "further maths", "further-math", "f.maths", "f.math",
-            "fmaths", "fmath", "furthermaths", "furthermath", "f maths", "f math"
+            "fmaths", "fmath", "furthermaths", "furthermath", "f maths", "f math", "fm"
         ],
         "computer science": [
             "cs", "comp sci", "computing", "computer science", "information technology", "it", "ict", "informatics",
@@ -348,6 +348,30 @@ SYNONYMS = {
         "drama": [
             "drama", "theatre", "theater", "theatre studies", "performing arts", "drama studies",
             "acting", "performance studies", "dramatic arts"
+        ],
+
+        "physics": [
+            "physics", "phys", "physics degree", "applied physics", "theoretical physics",
+            "physics with astronomy", "astrophysics", "physics studies"
+        ],
+
+        "chemistry": [
+            "chemistry", "chem", "chemistry degree", "chemical sciences", "applied chemistry",
+            "medicinal chemistry", "pharmaceutical chemistry", "chemistry studies"
+        ],
+
+        "geography": [
+            "geography", "geo", "geog", "geography degree", "human geography", "physical geography",
+            "environmental geography", "geography studies"
+        ],
+
+        "sports science": [
+            "sports science", "sport science", "sports studies", "sport studies", "sport and exercise science",
+            "kinesiology", "sports therapy", "sports management", "sports coaching"
+        ],
+
+        "physiotherapy": [
+            "physiotherapy", "physio", "physical therapy", "physiotherapy degree", "physiotherapist"
         ],
 
     }
