@@ -53,7 +53,7 @@ SYNONYMS = {
         ],
         "computer science": [
             "cs", "comp sci", "computing", "computer science", "information technology", "it", "ict", "informatics",
-            "information systems", "ict", "information tech"
+            "information systems", "ict", "information tech", "comp", "computers"
         ],
         "biology": [
             "biology", "bio", "biological sciences"
@@ -191,7 +191,7 @@ SYNONYMS = {
             "computer science", "cs", "comp sci", "software engineering", "computing", "informatics",
             "information systems", "ict", "information tech",
             "data science", "artificial intelligence", "ai", "cybersecurity", "computer engineering",
-            "digital technology", "machine learning", "comp science"
+            "digital technology", "machine learning", "comp science", "comp", "computers"
         ],
 
         "law": [
