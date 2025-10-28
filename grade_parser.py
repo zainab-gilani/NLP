@@ -281,7 +281,7 @@ class GradeParser:
 
     def normalize_subject(self, subject: str) -> str:
         """
-        Converts a subject synonym to its main) subject name.
+        Converts a subject synonym to its main subject name.
 
         :param subject: str
             The subject name or synonym, e.g. "maths", "comp sci", "bio".
