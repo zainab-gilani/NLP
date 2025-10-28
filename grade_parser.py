@@ -166,8 +166,18 @@ class GradeParser:
         # Start with clean sentence, dropped subjects removed  
         cleaned_sentence: str = self.find_dropped_subjects(modified_input)
 
-        # Helper function to process multi-grade matches
         def process_multi_grade(match) -> str:
+            """
+            Helper function to process multi-grade patterns like "AAB in Maths, Physics, Chemistry".
+            Takes a regex match containing grades and subjects, then assigns grades to subjects
+            in sequence order (first grade to first subject, second grade to second subject, etc.).
+            
+            :param match: re.Match
+                Regex match object containing groups for grades (group 1) and subjects (group 2).
+                Example match: "AAB in Maths, Physics, Chemistry" where group(1)="AAB" and group(2)="Maths, Physics, Chemistry"
+            :return: str
+                Empty string (used to remove the processed pattern from the original text)
+            """
             grades_str: str = match.group(1)
             subjects_str: str = match.group(2)
 
