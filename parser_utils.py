@@ -10,8 +10,10 @@ _cached_synonyms = None
 
 def extract_course_field_from_name(course_name: str) -> str:
     """
-    Takes a course name and gets the main subject from it.
-    E.g. "Computer Science BSc (Hons)" becomes "computer science"
+    Takes a course name and gets the main subject from it by removing qualifications and common words.
+
+    :param course_name: Full course name including qualifications (e.g., "Computer Science BSc (Hons)")
+    :return: Cleaned course name as lowercase string (e.g., "computer science")
     """
     if not course_name:
         return ""
@@ -41,10 +43,10 @@ def extract_course_field_from_name(course_name: str) -> str:
 
 def load_combined_synonyms() -> Dict:
     """
-    Gets all the subjects and course names from the database and adds them
-    to the hardcoded synonym list. This way the parser knows about all
-    the subjects we have in our data.
-    Called lazily when first needed.
+    Gets all the subjects and course names from the database and combines them
+    with the hardcoded synonym list for parsing.
+
+    :return: Dictionary containing subjects, courses, dropped phrases, interest phrases, and none phrases
     """
     global _cached_synonyms
     
@@ -119,8 +121,9 @@ def load_combined_synonyms() -> Dict:
 
 def get_synonyms() -> Dict:
     """
-    Get the cached combined synonyms.
-    If not loaded yet, load them first.
+    Gets the cached combined synonyms dictionary.
+
+    :return: Dictionary containing all synonym data (subjects, courses, dropped, interest, none)
     """
     global _cached_synonyms
     

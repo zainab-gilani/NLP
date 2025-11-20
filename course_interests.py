@@ -15,10 +15,10 @@ except ImportError:
 
 def parse_interests(input_text: str) -> Dict[str, List[str]]:
     """
-    Find course interests in the input text.
-    
-    Returns dict with:
-    - interests: list of courses/subjects user is interested in
+    Finds course interests in the input text by matching interest phrases and course names.
+
+    :param input_text: User input containing course interests
+    :return: Dictionary with 'interests' key containing list of main course names
     """
     
     result = {
