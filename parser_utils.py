@@ -18,9 +18,9 @@ def extract_course_field_from_name(course_name: str) -> str:
     if not course_name:
         return ""
     # endif
-    
+
     clean = course_name.lower()
-    
+
     # remove common qualifications and brackets
     removals = [
         ' (hons)', ' hons', ' bsc', ' ba', ' msc', ' ma',
@@ -28,16 +28,18 @@ def extract_course_field_from_name(course_name: str) -> str:
         ' degree', ' programme', ' program', ' course',
         ' - ', ' with ', ' and ', ' & ', '(', ')'
     ]
-    
+
     for r in removals:
         clean = clean.replace(r, ' ')
 
-    #endfor
-    
+    # endfor
+
     # remove extra spaces
     clean = ' '.join(clean.split())
-    
+
     return clean.strip()
+
+
 # enddef
 
 
@@ -49,7 +51,7 @@ def load_combined_synonyms() -> Dict:
     :return: Dictionary containing subjects, courses, dropped phrases, interest phrases, and none phrases
     """
     global _cached_synonyms
-    
+
     # start with hardcoded synonyms
     combined = {
         "subjects": SYNONYMS["subjects"].copy(),
@@ -58,27 +60,27 @@ def load_combined_synonyms() -> Dict:
         "interest": SYNONYMS["interest"],
         "none": SYNONYMS["none"]
     }
-    
+
     try:
         # only try to load from database if Django is properly set up
         import django
         from django.apps import apps
-        
+
         if apps.ready:
             # import models here to avoid circular imports
             from mysite.apps.coursefinder.models import Course, SubjectRequirement
-            
+
             # get unique course names from database
             course_names = Course.objects.values_list('name', flat=True).distinct()
-            
+
             for name in course_names:
                 if not name:
                     continue
                 # endif
-                
+
                 # use our function to clean the course name
                 clean_name = extract_course_field_from_name(name)
-                
+
                 # add to courses dict if not already there
                 if clean_name and clean_name not in combined["courses"]:
                     # create a new entry with the course name mapping to itself
@@ -90,32 +92,34 @@ def load_combined_synonyms() -> Dict:
                     # endif
                 # endif
             # endfor
-            
+
             # get unique subjects from subject requirements
             subject_names = SubjectRequirement.objects.values_list('subject', flat=True).distinct()
-            
+
             for name in subject_names:
                 if not name:
                     continue
                 # endif
-                    
+
                 clean_name = name.lower().strip()
-                
+
                 # add to subjects dict if not already there
                 if clean_name and clean_name not in combined["subjects"]:
                     combined["subjects"][clean_name] = [clean_name]
                 # endif
             # endfor
         # endif
-        
+
     except Exception as e:
         # just use hardcoded if database not available
         pass
     # endtry
-    
+
     # cache the result
     _cached_synonyms = combined
     return combined
+
+
 # enddef
 
 
@@ -126,10 +130,10 @@ def get_synonyms() -> Dict:
     :return: Dictionary containing all synonym data (subjects, courses, dropped, interest, none)
     """
     global _cached_synonyms
-    
+
     if _cached_synonyms is None:
         load_combined_synonyms()
     # endif
-    
+
     return _cached_synonyms
 # enddef
