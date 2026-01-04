@@ -4,6 +4,7 @@ dropped_phrases = [
     "dropped", "quit", "failed", "retook", "gave up", "left"
 ]
 
+
 def remove_dropped(input):
     sentence = input.lower()
     # 1. Remove dropped chunks (handles “and drama”, “music and drama”, etc.)
@@ -36,6 +37,7 @@ def remove_dropped(input):
         sentence = ""
 
     return sentence
+
 
 tests = [
     ("A in maths and B in physics, and dropped chemistry", "a in maths and b in physics"),
