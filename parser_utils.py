@@ -1,7 +1,8 @@
 """
 Utils for integrating NLP parser with Django database
 """
-from typing import Dict, List
+from typing import Dict
+
 from .synonyms import SYNONYMS
 
 # cache for combined synonyms
