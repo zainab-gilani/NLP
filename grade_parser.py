@@ -14,7 +14,7 @@ except ImportError:
 
 
 class GradeParser:
-    GRADE_PATTERN: str = r'\bA\*|A|B|C|D|E|U\b'  # Finds grades like A*, B, U, etc
+    GRADE_PATTERN: str = r'\bA\*|D\*|A|B|C|D|E|U|M|P\b'  # Finds grades like A*, D*, B, M, P, etc
 
     def clean_input(self, input: str) -> str:
         """
@@ -133,7 +133,7 @@ class GradeParser:
         # First, handle "A in Subject1 Subject2 and Subject3" pattern on original input
         # This needs to be done before clean_input replaces "and" with ","
         # Only match when there are multiple single-word subjects (like "Math Chem and Bio")
-        single_grade_multiple_subjects_pattern = r'\b(?:got\s+|have\s+|achieved\s+|received\s+)?(A\*|[A-U])\s+in\s+([A-Za-z]+\s+[A-Za-z]+\s+and\s+[A-Za-z]+)'
+        single_grade_multiple_subjects_pattern = r'\b(?:got\s+|have\s+|achieved\s+|received\s+)?(A\*|D\*|[A-U])\s+in\s+([A-Za-z]+\s+[A-Za-z]+\s+and\s+[A-Za-z]+)'
         matches = re.findall(single_grade_multiple_subjects_pattern, input, re.IGNORECASE)
 
         for match in matches:
@@ -197,9 +197,12 @@ class GradeParser:
             i: int = 0
 
             while i < len(grades_str):
-                # Handle A* as single grade
+                # Handle A* and D* as single grades
                 if grades_str[i].upper() == "A" and (i + 1) < len(grades_str) and grades_str[i + 1] == "*":
                     grades.append("A*")
+                    i += 2
+                elif grades_str[i].upper() == "D" and (i + 1) < len(grades_str) and grades_str[i + 1] == "*":
+                    grades.append("D*")
                     i += 2
                 else:
                     grades.append(grades_str[i].upper())
@@ -250,7 +253,7 @@ class GradeParser:
         # enddef
 
         # First pass: Find and process multi-grade patterns (AAB in ...)
-        multi_pattern: str = r'\b((?:[ABCDUE]|A\*){2,})\s+in\s+([a-zA-Z\s,]+?)(?:\.|,\s*[a-zA-Z]+\s+in\s|$)'
+        multi_pattern: str = r'\b((?:A\*|D\*|[A-U]){2,})\s+in\s+([a-zA-Z\s,]+?)(?:\.|,\s*[a-zA-Z]+\s+in\s|$)'
         remaining: str = re.sub(multi_pattern, process_multi_grade, cleaned_sentence, flags=re.IGNORECASE)
 
         # check for patterns like "I got BBB" where they don't say subjects
@@ -295,7 +298,7 @@ class GradeParser:
 
         # Match subject-grade pairs with flexible spacing
         # Include A* handling - make sure to match A* first
-        words_and_grades = re.findall(r'\b([a-zA-Z]+(?:\s+[a-zA-Z]+)?)\s+(A\*|[A-U]\b)', remaining_cleaned,
+        words_and_grades = re.findall(r'\b([a-zA-Z]+(?:\s+[a-zA-Z]+)?)\s+(A\*|D\*|[A-U]\b)', remaining_cleaned,
                                       re.IGNORECASE)
         for word, grade in words_and_grades:
             # Check if this word/phrase is a known subject
@@ -317,10 +320,10 @@ class GradeParser:
         # endfor
 
         patterns: list[tuple[str, str]] = [
-            (r'\b(?:got\s+)?(A\*|[A-U])\s+in\s+([a-zA-Z]+(?:\s+[a-zA-Z]+)*?)(?=\s+[A-U]\s+in\s+|[,.]|$)',
+            (r'\b(?:got\s+)?(A\*|D\*|[A-U])\s+in\s+([a-zA-Z]+(?:\s+[a-zA-Z]+)*?)(?=\s+[A-U]\s+in\s+|[,.]|$)',
              "grade_in_subject"),
-            (r"([a-zA-Z\s]+?)\s*[:\-]\s*(A\*|A|B|C|D|E|U)", "subject_colon_grade"),
-            (r"(?:my grade in|in)\s+([a-zA-Z\s]+?)\s+is\s+(A\*|A|B|C|D|E|U)", "in_subject_is_grade"),
+            (r"([a-zA-Z\s]+?)\s*[:\-]\s*(A\*|D\*|A|B|C|D|E|U|M|P)", "subject_colon_grade"),
+            (r"(?:my grade in|in)\s+([a-zA-Z\s]+?)\s+is\s+(A\*|D\*|A|B|C|D|E|U|M|P)", "in_subject_is_grade"),
         ]
 
         for pattern, mode in patterns:
