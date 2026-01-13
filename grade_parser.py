@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import re
-from parser_utils import get_synonyms
+from .parser_utils import get_synonyms
 
 
 class GradeParser:
