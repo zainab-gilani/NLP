@@ -20,7 +20,7 @@ SYNONYMS = {
         "intent to study", "wish to apply for", "wish to apply to", "hope to do", "hoping for", "curious about",
         "planning on", "searching for", "looking for", "looking forward to", "would like to study",
         "studying", "study", "i want to study", "i hope to study", "i'm interested in", "keen on",
-        "apply for", "apply to", "would love to study", "prefer to study", "desire to study"
+        "apply for", "apply to", "would love to study", "prefer to study", "desire to study", "want to do"
     ],
 
     # All the ways to say someone did not drop anything, or none at all
@@ -129,7 +129,7 @@ SYNONYMS = {
             "education", "teaching", "teacher training", "education studies"
         ],
         "law": [
-            "law", "legal studies", "criminal law", "public law", "constitutional law"
+            "law", "legal studies", "criminal law", "public law", "constitutional law", "btec law"
         ],
         "forensic science": [
             "forensic science", "forensics", "forensic"
@@ -145,7 +145,8 @@ SYNONYMS = {
             "communication", "communications", "media communications", "digital communication"
         ],
         "public services": [
-            "public services", "public service", "uniformed services", "emergency services"
+            "public services", "public service", "uniformed services", "emergency services",
+            "btec public services"
         ],
 
         # --- LANGUAGES ---
@@ -228,13 +229,14 @@ SYNONYMS = {
             "dance", "dancing", "dance studies", "ballet", "contemporary dance"
         ],
         "music": [
-            "music", "mus", "music technology", "music theory"
+            "music", "mus", "music technology", "music theory", "btec music", "btec music technology"
         ],
         "animation": [
             "animation", "animated", "visual effects", "vfx"
         ],
         "media studies": [
-            "media studies", "media", "media science", "film studies", "film", "media production"
+            "media studies", "media", "media science", "film studies", "film", "media production",
+            "btec creative media", "btec media", "btec media production"
         ],
         "journalism": [
             "journalism", "journalist", "news", "reporting", "broadcast journalism"
@@ -252,7 +254,7 @@ SYNONYMS = {
         # --- DESIGN / TECH ---
         "design and technology": [
             "design and technology", "d&t", "dt", "design tech", "product design", "food tech", "textiles",
-            "fashion", "resistant materials"
+            "fashion", "resistant materials", "btec art and design", "btec design"
         ],
         "engineering": [
             "engineering", "engineer", "mechanical engineering", "electrical engineering", "civil engineering",
@@ -301,12 +303,13 @@ SYNONYMS = {
             "food science", "food technology", "nutrition", "nutrition science", "food studies"
         ],
         "child development": [
-            "child development", "childcare", "early childhood", "childhood studies"
+            "child development", "childcare", "early childhood", "childhood studies", "btec childcare"
         ],
 
         # --- HOSPITALITY / TOURISM ---
         "hospitality": [
-            "hospitality", "hospitality studies", "hospitality management", "hotel management"
+            "hospitality", "hospitality studies", "hospitality management", "hotel management",
+            "btec hospitality"
         ],
         "travel and tourism": [
             "travel and tourism", "tourism", "tourism studies", "travel", "tourism management",
@@ -346,10 +349,10 @@ SYNONYMS = {
 
         # --- BEAUTY, HAIR, FASHION ---
         "beauty therapy": [
-            "beauty therapy", "beauty", "cosmetology", "beauty studies"
+            "beauty therapy", "beauty", "cosmetology", "beauty studies", "btec beauty therapy"
         ],
         "hairdressing": [
-            "hairdressing", "hair styling", "hair studies"
+            "hairdressing", "hair styling", "hair studies", "btec hairdressing"
         ],
 
     },

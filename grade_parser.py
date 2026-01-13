@@ -258,7 +258,7 @@ class GradeParser:
 
         # check for patterns like "I got BBB" where they don't say subjects
         # match 2-4 grades together (not single letters cos they might be words)
-        standalone_grades_pattern = r'\b(?:got\s+|have\s+|achieved\s+|received\s+)?([ABCDUE](?:[ABCDUE]|\*){1,3})\b(?!\s+in\s)'
+        standalone_grades_pattern = r'\b(?:got\s+|have\s+|achieved\s+|received\s+)?((?:A\*|D\*|[ABCDUEPM]){2,4})\b(?!\s+in\s)'
         # only look for this if we haven't already found grades with subjects
         if not results:
             standalone_matches = re.findall(standalone_grades_pattern, cleaned_sentence, re.IGNORECASE)
@@ -273,6 +273,9 @@ class GradeParser:
             while i < len(grades_str):
                 if grades_str[i].upper() == "A" and (i + 1) < len(grades_str) and grades_str[i + 1] == "*":
                     grades.append("A*")
+                    i += 2
+                elif grades_str[i].upper() == "D" and (i + 1) < len(grades_str) and grades_str[i + 1] == "*":
+                    grades.append("D*")
                     i += 2
                 else:
                     grades.append(grades_str[i].upper())
@@ -515,11 +518,14 @@ class GradeParser:
             # endif
         # endfor
 
+        # Detect explicit interest phrases like "want to do" so we don't drop them from interests
+        explicit_interest = any(phrase in input_lower for phrase in get_synonyms()["interest"])
+
         # Removes any course from interests if it already appears in grades
-        # UNLESS it was explicitly mentioned with "I like/love/enjoy"
+        # UNLESS it was explicitly mentioned (interest phrases) or "I like/love/enjoy"
         clean_interests: list[str] = []
         for i in interests:
-            if i not in all_grades or i in keep_subjects_with_grades:
+            if explicit_interest or i not in all_grades or i in keep_subjects_with_grades:
                 clean_interests.append(i)
             # endif
         # endfor
