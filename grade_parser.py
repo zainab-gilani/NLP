@@ -1,16 +1,6 @@
 #!/usr/bin/env python3
 import re
-
-try:
-    # when used in Django
-    from .parser_utils import get_synonyms
-except ImportError:
-    # when used standalone for testing
-    from synonyms import SYNONYMS
-
-
-    def get_synonyms():
-        return SYNONYMS
+from parser_utils import get_synonyms
 
 
 class GradeParser:
