@@ -55,6 +55,10 @@ SYNONYMS = {
         "biology": [
             "biology", "bio", "biological sciences"
         ],
+        "applied science": [
+            "applied science", "applied sciences", "btec applied science", "btec applied sciences",
+            "btec science"
+        ],
         "chemistry": [
             "chemistry", "chem", "applied chemistry", "organic chemistry", "inorganic chemistry"
         ],
@@ -63,7 +67,8 @@ SYNONYMS = {
         ],
         "computer science": [
             "cs", "comp sci", "computing", "computer science", "information technology", "it", "ict", "informatics",
-            "information systems", "ict", "information tech", "comp", "computers"
+            "information systems", "ict", "information tech", "comp", "computers", "btec it", "btec ict",
+            "btec computing"
         ],
 
         # --- ENGLISH & HUMANITIES ---
@@ -88,13 +93,23 @@ SYNONYMS = {
 
         # --- BUSINESS & ECON ---
         "business": [
-            "business", "business studies", "biz", "bs", "business admin", "business administration", "commerce"
+            "business", "business studies", "biz", "bs", "business admin", "business administration", "commerce",
+            "btec business"
+        ],
+        "management": [
+            "management", "business management", "management studies", "leadership", "operations management"
+        ],
+        "human resources": [
+            "human resources", "hr", "people management"
         ],
         "economics": [
             "economics", "econ", "microeconomics", "macroeconomics"
         ],
         "accounting": [
             "accounting", "accountancy", "finance", "financial studies"
+        ],
+        "finance": [
+            "finance", "financial management", "banking", "investment", "accounting and finance"
         ],
 
         # --- SOCIAL SCIENCE / LAW ---
@@ -107,12 +122,27 @@ SYNONYMS = {
         "criminology": [
             "criminology", "crime", "crime science", "criminal justice", "criminal studies"
         ],
+        "social work": [
+            "social work", "social care", "community work"
+        ],
+        "education": [
+            "education", "teaching", "teacher training", "education studies"
+        ],
         "law": [
             "law", "legal studies", "criminal law", "public law", "constitutional law"
+        ],
+        "forensic science": [
+            "forensic science", "forensics", "forensic"
         ],
         "politics": [
             "politics", "government and politics", "govt and politics", "pol", "government",
             "international relations"
+        ],
+        "international relations": [
+            "international relations", "international studies", "global politics"
+        ],
+        "communications": [
+            "communication", "communications", "media communications", "digital communication"
         ],
         "public services": [
             "public services", "public service", "uniformed services", "emergency services"
@@ -185,8 +215,14 @@ SYNONYMS = {
             "art", "arts", "fine art", "visual art", "graphics", "graphic design", "photography", "art & design",
             "sculpture"
         ],
+        "illustration": [
+            "illustration", "illustrative", "book illustration"
+        ],
         "drama": [
-            "drama", "theatre studies", "performing arts"
+            "drama", "theatre studies", "performing arts", "btec performing arts"
+        ],
+        "acting": [
+            "acting", "actor training", "performance"
         ],
         "dance": [
             "dance", "dancing", "dance studies", "ballet", "contemporary dance"
@@ -194,8 +230,14 @@ SYNONYMS = {
         "music": [
             "music", "mus", "music technology", "music theory"
         ],
+        "animation": [
+            "animation", "animated", "visual effects", "vfx"
+        ],
         "media studies": [
             "media studies", "media", "media science", "film studies", "film", "media production"
+        ],
+        "journalism": [
+            "journalism", "journalist", "news", "reporting", "broadcast journalism"
         ],
         "film studies": [
             "film studies", "film", "cinema studies", "filmmaking"
@@ -214,7 +256,16 @@ SYNONYMS = {
         ],
         "engineering": [
             "engineering", "engineer", "mechanical engineering", "electrical engineering", "civil engineering",
-            "chemical engineering"
+            "chemical engineering", "btec engineering"
+        ],
+        "data science": [
+            "data science", "data", "data analytics", "data analysis", "big data"
+        ],
+        "environmental science": [
+            "environmental science", "environmental studies", "environment", "sustainability"
+        ],
+        "conservation": [
+            "conservation", "environmental conservation", "wildlife conservation"
         ],
         "automotive": [
             "automotive", "automotive studies", "automobile", "motor vehicle", "car technology"
@@ -224,8 +275,24 @@ SYNONYMS = {
         "pharmacy": [
             "pharmacy", "pharmacology"
         ],
+        "medicine": [
+            "medicine", "medical", "clinical medicine", "clinical"
+        ],
+        "nursing": [
+            "nursing", "adult nursing", "child nursing", "mental health nursing"
+        ],
+        "midwifery": [
+            "midwifery", "midwife"
+        ],
+        "mental health": [
+            "mental health", "mental health studies"
+        ],
+        "counselling": [
+            "counselling", "counseling", "therapy", "therapies", "psychotherapy"
+        ],
         "health and social care": [
-            "health and social care", "health studies", "social care", "healthcare", "health sciences", "health science"
+            "health and social care", "health studies", "social care", "healthcare", "health sciences",
+            "health science", "btec health and social care"
         ],
         "public health": [
             "public health"
@@ -242,7 +309,8 @@ SYNONYMS = {
             "hospitality", "hospitality studies", "hospitality management", "hotel management"
         ],
         "travel and tourism": [
-            "travel and tourism", "tourism", "tourism studies", "travel", "tourism management"
+            "travel and tourism", "tourism", "tourism studies", "travel", "tourism management",
+            "btec travel and tourism"
         ],
 
         # --- AVIATION / TRANSPORT / LOGISTICS ---
@@ -273,7 +341,7 @@ SYNONYMS = {
         ],
         "sports science": [
             "sports science", "sport science", "sports studies", "sport studies", "sports", "sport",
-            "sports coaching", "fitness", "sports management"
+            "sports coaching", "fitness", "sports management", "btec sport", "btec sport science"
         ],
 
         # --- BEAUTY, HAIR, FASHION ---
@@ -367,7 +435,8 @@ SYNONYMS = {
             "architectural technology", "architecture technology", "building technology"
         ],
         "construction management": [
-            "construction", "construction management", "building studies", "construction engineering", "site management"
+            "construction", "construction management", "building studies", "construction engineering",
+            "site management", "btec construction"
         ],
         "quantity surveying": [
             "quantity surveying", "surveyor", "building surveying", "construction surveying"
