@@ -3,19 +3,7 @@ Parse course interests from natural language input
 """
 import re
 from typing import Dict, List
-
-try:
-    from .parser_utils import get_synonyms
-except ImportError:
-    from synonyms import SYNONYMS
-
-
-    def get_synonyms():
-        return SYNONYMS
-    # enddef
-
-
-# endtry
+from .parser_utils import get_synonyms
 
 
 def parse_interests(input_text: str) -> Dict[str, List[str]]:
