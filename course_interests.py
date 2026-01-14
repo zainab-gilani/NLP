@@ -20,6 +20,7 @@ def parse_interests(input_text: str) -> Dict[str, List[str]]:
 
     if not input_text:
         return result
+    endif
 
     text = input_text.lower()
     synonyms = get_synonyms()
