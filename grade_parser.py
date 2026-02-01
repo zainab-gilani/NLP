@@ -232,7 +232,15 @@ class GradeParser:
                 # Assign grade by position, use last grade if more subjects than grades
                 grade: str = grades[i] if i < len(grades) else grades[-1]
 
-                if subject_norm:
+                is_subject = False
+                for main_subj, synonyms in get_synonyms()["subjects"].items():
+                    if subject_norm == main_subj or subjects_list[i] in synonyms:
+                        is_subject = True
+                        break
+                    # endif
+                # endfor
+
+                if subject_norm and is_subject:
                     results[subject_norm] = grade
                 # endif
             # endfor
@@ -413,21 +421,20 @@ class GradeParser:
             # endif
         # endfor
 
-        # If an interest phrase is found, looks for matching courses using word boundaries
+        # If an interest phrase is found, only look at text after those phrases
         if found_interest_phrase:
-            for course, synonyms in courses_dict.items():
-                # Makes a list with the course name and all its synonyms
-                all_names: list[str] = [course] + synonyms
-                for name in all_names:
-                    # Builds a regex pattern to match the name as a whole word
-                    pattern: str = r'\b' + re.escape(name) + r'\b'
-                    if re.search(pattern, cleaned_joined):
-                        # Only adds if it hasn't already been found
-                        if course not in found_courses:
-                            found_courses.append(course)
+            input_lower = input.lower()
+            for phrase in interest_phrases:
+                pattern = rf"{re.escape(phrase)}\s+([a-z\s]+)"
+                matches = re.findall(pattern, input_lower)
+                for match in matches:
+                    for course, synonyms in courses_dict.items():
+                        if course in match or any(alias in match for alias in synonyms):
+                            if course not in found_courses:
+                                found_courses.append(course)
+                            # endif
                         # endif
-                        break  # No need to check other synonyms for this course
-                    # endif
+                    # endfor
                 # endfor
             # endfor
         # endif
